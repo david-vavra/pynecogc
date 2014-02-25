@@ -1079,24 +1079,6 @@ class Device():
         return self.instances
 
 
-"""
-for dev in devicesToParse:
-    str=tmpl.safe_substitute(devices[dev].instances['ntp'].fillRatVars())
-    f=open('docs/rat-docs/uvt-test/{0}'.format(dev),'w').write(str)
-    subprocess.call(['ncat','-t=cisco-uvt','-r docs/rat-docs/uvt-test/{0}'.format(dev)
-        ,'/home/sev/thesis/konfigurace/{0}'.format(dev)])
-"""
-"""
-for instance in devices['sw14.mgmt.ics.muni.cz'].instances:
-    print(devices['sw14.mgmt.ics.muni.cz'].instances[instance].ciscoPrint())
-"""
-
-
-def printUsage():
-    pass
-
-
-
 
 def main():
 
@@ -1108,7 +1090,6 @@ def main():
     argParser.add_argument('-r','--rulesFile_template', help="Name of the mako template file in directory chosen with the -t option")
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device_cfg',nargs='+')
-    #args="-t cisco-uvt -r /home/sev/thesis/pyrage/docs/rat.conf.mako -n /home/sev/thesis/pyrage/docs/devices.xml sw11.mgmt.ics.muni.cz sw12.mgmt.ics.muni.cz sw13.mgmt.ics.muni.cz sw14.mgmt.ics.muni.cz sw15.mgmt.ics.muni.cz sw16.mgmt.ics.muni.cz sw17.mgmt.ics.muni.cz sw21.mgmt.ics.muni.cz sw22.mgmt.ics.muni.cz sw31.mgmt.ics.muni.cz sw32.mgmt.ics.muni.cz sw33.mgmt.ics.muni.cz sw9.mgmt.ics.muni.cz".split()
     inputArgs=argParser.parse_args(sys.argv[1:])
 
     logger = Logger('warning')
