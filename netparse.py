@@ -17,8 +17,10 @@ class NetworkParser():
         self.deviceDef  = None
         self.acls = {}
 
-        # instance of currently parsed device, so it's attributes could be accessed
-        # within the context of methods called by parseDevice method.
+        """
+         instance of currently parsed device, so it's attributes could be accessed
+         within the context of methods called by parseDevice method.
+        """
         self.currentlyParsedDevice=None
 
         self.ERR_DEVICE_NOT_FOUND = 1
@@ -54,8 +56,7 @@ class NetworkParser():
             self.parsedDevices[dev.fqdn] = None
             return self.ERR_DEVICE_NOT_FOUND
 
-        # todo mozne chyby pri zpracovani exception, or [OK,list]
-
+        
         if deviceDef.find('vendor') is not None:
             dev.vendor = deviceDef.find('vendor').text
         if deviceDef.find('type') is not None:
@@ -66,16 +67,10 @@ class NetworkParser():
             dev.l3=True if deviceDef.find('l3').text.lower()=='true' else False
         if deviceDef.find('ipv6') is not None:
             dev.ip6=True if deviceDef.find('ipv6').text.lower()=='true' else False
-        # todo, possibly add ipv4 tag into devices.xml
+        """ todo, possibly add ipv4 tag into devices.xml """
         dev.ip4=True
 
-        # parse group info starting with the DEFAULT group and then with the
-        # other groups in the same order as they are defined within the xml.
-        """
-        for group in self.network.iter('group'):
-            if group.attrib['id'] == 'DEFAULT':
-                self._parseContext(group,deviceInstances)
-        """
+        
         dev.groups=deviceDef.attrib['groups'].split(',') if 'groups' in deviceDef.attrib else []
 
         for member in dev.groups:
@@ -83,7 +78,7 @@ class NetworkParser():
                 if dev.groups.attrib['id'] == member:
                     self._parseContext(dev.groups,deviceInstances)
 
-        # parse the particular device's parameters
+        """ parse the particular device's parameters """
         self._parseContext(deviceDef,deviceInstances)
 
         self.currentlyParsedDevice=None
@@ -95,7 +90,7 @@ class NetworkParser():
             Later calls of this or other methods may overwrite those.
 
             Rules signifancy:
-            DEFAULT_GROUP < MEMBER_GROUP < DEVICE
+            MEMBER_GROUP (in as-in-file order) < DEVICE
         """
         for name,instance in instances.items():
             instance.parseContext(context)
@@ -104,20 +99,7 @@ class NetworkParser():
 class Device():
     def __init__(self,deviceName):
         self.instances = copy.deepcopy(instances)
-        """self.instances = {
-              'snmp':SNMP(),
-              'dhcpSnooping':DHCPSnooping(),
-              'arpInspection':ArpInspection(),
-              'aaa':AAA(),
-              'dns':DNS(),
-              'ntp':NTP(),
-              'vty':VTY(),
-              #'errdisable':Errdisable(),
-              'syslog':Syslog(),
-              'uRPF':URPF(),
-              'ipSourceGuard':IPSourceGuard()
-            }
-        """
+
         self.fqdn = deviceName
         self.vendor = ""
         self.type = ""

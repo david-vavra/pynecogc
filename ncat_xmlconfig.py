@@ -21,22 +21,21 @@ import subprocess
 
 def main():
 
-    #
-    # handle input args
-    #
+    """
+    Handle input args
+    """
     argParser=argparse.ArgumentParser(description="Wrapper for router audit tool ncat.")
     argParser.add_argument('-t','--configType',help="Chooses the directory with configuration files for given audit among the others in ncat config dir")
     argParser.add_argument('-r','--rulesFile_template', help="Name of the mako template file in directory chosen with the -t option")
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device_cfg',nargs='+')
-    #sys.argv="a -t cisco-uvt -r /home/sev/thesis/pyrage/docs/cisco-2.mako -n /home/sev/thesis/pyrage/docs/devices.xml sw14.mgmt.ics.muni.cz".split(' ')
     inputArgs=argParser.parse_args(sys.argv[1:])
 
     logger = Logger('warning')
 
-    #
-    # try to parse xml file
-    #
+    """
+     try to parse xml file
+    """
     parser = NetworkParser(logger,inputArgs.networkDef)
     deviceInstances={}
     for dev in inputArgs.device_cfg:
@@ -47,9 +46,9 @@ def main():
             logger.log('error',dev+e.msg)
             raise SystemExit(1)
 
-    #
-    # generate ncat rules for every device
-    #
+    """
+     generate ncat rules for every device
+    """
     lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/docs'])
     mkt=Template(open(inputArgs.rulesFile_template).read(),lookup=lookup,strict_undefined=True)
     for dev,instance in deviceInstances.items():
@@ -62,10 +61,9 @@ def main():
             **instance.instances))
         f.close()
 
-    #
-    # launch ncat for every device
-    #
-
+    """
+     launch ncat for every device
+    """
     ncatOutputFilesString=[]
     allRules=""
     for dev,instance in deviceInstances.items():
