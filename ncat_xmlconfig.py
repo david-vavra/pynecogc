@@ -15,7 +15,7 @@ import argparse
 from netparse import Device
 from netparse import NetworkParser
 
-from amber import InvalidData
+from utils import InvalidData
 
 import subprocess
 
