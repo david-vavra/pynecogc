@@ -37,8 +37,6 @@ def validateVlanRange(vlanRangeToValidate):
             commas separated list: 1,3,4
             dash separated first and last vlan of the range: 1-4094
     """
-    # TODO ? kontrola vlan range (max 4094)?
-    # ruzna syntax u jinych vyrobcu?
 
     vlanRange = []
     isSingleVlan = True
@@ -70,15 +68,15 @@ def validateVlanRange(vlanRangeToValidate):
     return True
 
 def isValidIP(ip):
-    # return boolean value based on whether given argument ip is a valid IP address
+    """ return boolean value based on whether given argument ip is a valid IP address """
     try:
-        # first, test if ip is a valid ipv4 addr
+        """ first, test if ip is a valid ipv4 addr """
         socket.inet_pton(socket.AF_INET,ip)
         return 4
     except socket.error:
         pass
     try:
-        # test if ip is a valid ipv6 addr
+        """ test if ip is a valid ipv6 addr """
         socket.inet_pton(socket.AF_INET6,ip)
         return 6
     except socket.error:
