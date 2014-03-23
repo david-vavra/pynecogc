@@ -29,7 +29,6 @@ def main():
     argParser.add_argument('-r','--rulesFile_template', help="Name of the mako template file in directory chosen with the -t option")
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device_cfg',nargs='+')
-    #sys.argv="a -t cisco-uvt -r /home/sev/thesis/pyrage/docs/cisco-2.mako -n /home/sev/thesis/pyrage/docs/devices.xml sw14.mgmt.ics.muni.cz".split(' ')
     inputArgs=argParser.parse_args(sys.argv[1:])
 
     logger = Logger('warning')
