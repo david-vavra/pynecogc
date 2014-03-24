@@ -1,6 +1,5 @@
 <%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
 
-#{{{
 # FUNCTIONS
 <%def name="makeRegexOfContextInstanceList(contextList)">\
 ${'('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+')'}\
@@ -10,8 +9,39 @@ ${'('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+')'}\
 ${'(?!('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+').+)'}\
 </%def>
 
-#{{{
 <%!
+def makeListOfVlanRange(vlanRange):
+    if not vlanRange:
+        return ['ERR']
+    listOfRanges=vlanRange.split(',')
+    vlanList=[]
+    for r in listOfRanges:
+        if '-' not in r:
+            # test whether given ranges are in fact vlans (i.e. vlanRange was sth like '1,2,3,10')
+            vlanList.append(int(r))
+        else:
+            r=r.split('-')
+            if len(r)>2:
+                # '1-2-10' -> not valid vlanRange
+                return []
+            try:
+                vlanList+=range(int(r[0]),int(r[1])+1)
+            except ValueError:
+                return ['ERR']
+    vlanList.sort()
+    return list(set(vlanList))
+
+def fixContextConf(contextName,contextList,conf):
+	output=""
+	for context in contextList:
+		output+="{0} {1}\\\n".format(contextName,
+			context)
+		output+="{0}\\\n".format(conf)
+	return output
+	
+def newline():
+	return '\\\n'
+	
 from collections import defaultdict 
 
 def buildNetMask(maskLen,wildcardFormat=True):
@@ -56,6 +86,42 @@ def buildNetMask(maskLen,wildcardFormat=True):
 
         return wildcardMask[:-1]
         
+from itertools import permutations
+
+def getRegexOfList(values):
+    permut=(list(permutations(values)))
+    resultingRegex=''
+    for p in permut:
+        resultingRegex+='('+(''.join(list(p)))+')|'
+    return resultingRegex[:-1]
+
+    
+    
+def makeListOfVlanRange(vlanRange):
+#    if not validateVlanRange(vlanRange):
+#       return ['ERR']
+    listOfRanges=vlanRange.split(',')
+    vlanList=[]
+    for r in listOfRanges:
+        if '-' not in r:
+            # test whether given ranges are in fact vlans (i.e. vlanRange was sth like '1,2,3,10')
+            vlanList.append(int(r))
+        else:
+            r=r.split('-')
+            if len(r)>2:
+                # '1-2-10' -> not valid vlanRange
+                return []
+            try:
+                vlanList+=range(int(r[0]),int(r[1])+1)
+            except ValueError:
+                return ['ERR']
+    vlanList.sort()
+    return list(set(vlanList))       	
+%>
+
+#{{{
+#{{{
+<%!
 def printAcl(acl):
     validAclTypes = ['standard','extended']
     separator = "!"
@@ -64,19 +130,15 @@ def printAcl(acl):
     if acl is None:
         return "! Unable to print acl\\\n"
 
-    def _isAclNumbered(name):
-        try:
-            int(name)
-        except ValueError:
-            return False
-        return True
  
     # choose the acl name
     name=""
-    if 'cisco' in acl.name:
-        name=acl.name['cisco']
-    elif 'generic' in acl.name:
-        name=acl.name['generic']
+    isNumberedAcl=False
+    if 'cisco' in acl.number:
+    	name=acl.number['cisco']
+    	isNumberedAcl=True
+    elif len(acl.name)>0:
+        name=acl.name
     else:
         return "! Unable to print acl\\\n"
 
@@ -107,7 +169,7 @@ def printAcl(acl):
     lineComment = "remark %(comment)s"
     
     # build the acl
-    if not _isAclNumbered(name):
+    if not isNumberedAcl:
         output += 'ip access-list {aclType} {name}\\\n'.format(
         	aclType=aclType.lower(), 
         	name=name)
@@ -129,7 +191,7 @@ def printAcl(acl):
                     lineArgs['seq'] = lineNum+1
 
             # the comment itself
-            if _isAclNumbered(name):
+            if isNumberedAcl:
                 output += 'access-list {0} '.format(name) + lineComment % rule + '\\\n'
             else:
                 output += lineNum + ' ' + lineComment % comment + '\\\n'
@@ -149,9 +211,10 @@ def printAcl(acl):
         # build a proper source/dest port def.syntax
         lineArgs['source_port']=('eq '+lineArgs['source_port']) if len(lineArgs['source_port']) else lineArgs['source_port']
         lineArgs['destination_port']=('eq '+lineArgs['destination_port']) if len(lineArgs['destination_port']) else lineArgs['destination_port']
+        lineArgs['log']='log' if lineArgs['log']==True else '' 
         if aclType != 'standard':
             lineArgs['destination_mask'] = "" if not lineArgs['source_mask'] else buildNetMask(lineArgs['destination_mask'])
-        if _isAclNumbered(name):
+        if isNumberedAcl:
             output += 'access-list {0} '.format(name) + (lineSyntax % lineArgs).strip() + '\\\n'
         else:
             output += (lineSyntax % lineArgs).rstrip() + '\\\n'
@@ -160,20 +223,17 @@ def printAcl(acl):
     output=output.replace('0.0.0.0 255.255.255.255','any')
     
     return output[:-2]
+    
+def getAclName(acl):
+	if acl is None: 
+		return ""
+	if 'cisco' in acl.number:
+		return acl.number['cisco']
+	else: 
+		return acl.name    
 %>
 #}}}
 
-
-<%!
-from itertools import permutations
-
-def getRegexOfList(values):
-    permut=(list(permutations(values)))
-    resultingRegex=''
-    for p in permut:
-        resultingRegex+='('+(''.join(list(p)))+')|'
-    return resultingRegex[:-1]
-%>
 
 <%!
 def printTacacsServers(aaa):
@@ -259,18 +319,7 @@ ConfigRulesAlias:cisco-ios-benchmark.html
 configintrotext:\
 <h2>Introduction</h2>\
 <BLOCKQUOTE>\
-This file lists rules that were used by the \
-<a href=http://www.cisecurity.org/bench_cisco.html>Router Assessment Tool</a>,\
-a free tool for checking security configurations of Cisco IOS routers\
-published by \
-<a href=http://www.cisecurity.org>The Center for Internet Security (CIS)</a>.\
-<p>\
-This file is automatically generated each time the Router Assessment Tool\
-is run and may reflect local configuration of the rules.\
-<p>\
-For a full description of the rules defined by the CIS\
-benchmark, see the  benchmark\
-document which is distributed with the Router Assessment Tool.\
+TODO\
 </BLOCKQUOTE>
 
 ConfigTrailingText:Please send a feedback about the benchmark to vavra@ics.muni.cz
@@ -285,7 +334,7 @@ ConfigDataHowToGet:None
 ConfigDataDescription:None
 
 ConfigClassName:ICS Level 2 
-ConfigClassDescription:Root class for all ICS security requirements of level 1
+ConfigClassDescription:Root class for all ICS security requirements of level 2
 ConfigClassSelected:Yes
 ConfigClassParentName:Selectable
 
@@ -459,47 +508,21 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{ URPF
-% if uRPF is not None and device.l3 and (len(uRPF.interfaces)>0 or uRPF.defaultMode is not None):
+% if uRPF is not None and (device.l3 == True and uRPF.mode.lower() is not 'none'):
 ConfigClassName:3.5 URPF
 ConfigClassDescription:URPF related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
 
-% if 'strict' in uRPF.interfaces and len(uRPF.interfaces['strict'])>0:
-ConfigRuleName:3.5.1 Require strict urpf mode on given interfaces
-ConfigRuleParentName:3.5 URPF
-ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
-ConfigRuleInstance:${makeRegexOfContextInstanceList(uRPF.interfaces['strict'])}
-ConfigRuleType:Required
-ConfigRuleMatch:<code>ip verify unicast source reachable-via rx</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Require strict urpf mode on given set of interfaces
-ConfigRuleSelected:Yes
-% endif
-
-% if 'loose' in uRPF.interfaces and len(uRPF.interfaces['loose'])>0:
-ConfigRuleName:3.5.2 Require loose urpf mode on particular interfaces
-ConfigRuleParentName:3.5 URPF
-ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
-ConfigRuleInstance:${makeRegexOfContextInstanceList(uRPF.interfaces['loose'])}
-ConfigRuleType:Required
-ConfigRuleMatch:<code>ip verify unicast source reachable-via any</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Require loose urpf mode on given set of interfaces
-ConfigRuleSelected:Yes
-% endif
-
 # shouldn't be on all but the before specified?
-% if uRPF.defaultMode is not None and uRPF.defaultMode.lower() in ['strict','loose']:
-ConfigRuleName:3.5.3 Require chosen default urpf mode ${uRPF.defaultMode} on every interface
+% if uRPF.mode is not 'none' and uRPF.mode.lower() in ['strict','loose']:
+ConfigRuleName:3.5.1 Require chosen default urpf mode on every interface
 ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:(.+Ethernet)|(Vlan.+)
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.defaultMode.lower()=='strict' else 'any'})|switchport</code>
+ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|switchport|shutdown</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require chosen default urpf mode on every interface
 ConfigRuleSelected:Yes
@@ -507,31 +530,46 @@ ConfigRuleSelected:Yes
 % endif
 #}}}
 
-ConfigRuleName:3.6 Limit number of MAC addresses on an interface
+% if ipSourceGuard is not None and len(ipSourceGuard.vlanRange)>0:
+ConfigRuleName:3.6 Require IP source guard to be enabled on given interfaces
+ConfigRuleParentName:3. Data plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:AccessPort
+ConfigRuleInstance:${makeRegexOfContextInstanceList(makeListOfVlanRange(ipSourceGuard.vlanRange))}
+ConfigRuleType:Required
+ConfigRuleMatch:<code>ip verify source$</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require IP source guard to be enabled on given interfaces 
+ConfigRuleSelected:Yes
+% endif 
+
+ConfigRuleName:3.7 Limit number of MAC addresses on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(switchport mode trunk)|((switchport mode access\
-)|(.+\
-)*|^switchport port-security maximum (\d+)$)</code>
+ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(switchport port-security maximum (\d+)$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit number of MAC addresses on an interface 
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+switchport port-security maximum 1
 
-% if ipSourceGuard is not None and len(ipSourceGuard.vlanList)>0:
-ConfigRuleName:3.7 Require IP source guard to be enabled on given interfaces
+ConfigRuleName:3.8 Limit amount odf broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:AccessPort
-ConfigRuleInstance:${makeRegexOfContextInstanceList(ipSourceGuard.vlanList)}
+ConfigRuleContext:IOSHwInterface
+ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^ip verify source$</code>
+ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Require IP source guard to be enabled on given interfaces 
+ConfigRuleDescription:Limit number of MAC addresses on an interface 
 ConfigRuleSelected:Yes
-% endif 
+ConfigRuleFix:interface INSTANCE${"\\"}
+switchport port-security maximum 1
+
+
 #}}}
 
 ###################
@@ -544,20 +582,22 @@ ConfigClassSelected:Yes
 ConfigClassParentName:2. Control plane
 
 <%
-ntpServersRegex=""
+ntpServers=""
 for i,ntpHost in ntp.hosts.items():
-	ntpServersRegex+="ntp server {0}\\\n".format(ntpHost)
-ntpServersRegex=ntpServersRegex[:-2]
+	ntpServers+="ntp server {0}\\\n".format(ntpHost)
+ntpServers=ntpServers[:-2]
+
 %>
 ConfigRuleName:2.1.1 NTP servers 
 ConfigRuleParentName:2.1 NTP 
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${ntpServersRegex}</code>
+ConfigRuleMatch:<code>${ntpServers}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require NTP servers
 ConfigRuleSelected:Yes
+ConfigRuleFix:<code>${ntpServers}</code>
 
 % if ntp.acl is not None:
 ConfigRuleName:2.1.2 NTP ACL 
@@ -569,15 +609,29 @@ ConfigRuleMatch:<code>${printAcl(ntp.acl)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict source of NTP queries
 ConfigRuleSelected:Yes
+ConfigRuleFix:<code>${printAcl(ntp.acl)}</code>
+
+ConfigRuleName:2.1.3 NTP ACL applied 
+ConfigRuleParentName:2.1 NTP 
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>ntp access-group peer ${ntp.acl.name if len(ntp.acl.name)>0 else ntp.acl.number['cisco']}</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require an access-list to resctrict source of NTP queries to be applied
+ConfigRuleSelected:Yes
+ConfigRuleFix:<code>ntp access-group peer ${ntp.acl.name if len(ntp.acl.name)>0 else ntp.acl.number['cisco']}</code>
 % endif 
 % endif
 
 #{{{ TODO add severity and facility
-% if syslog is not None and len(syslog.hosts)>0:
+% if syslog is not None:
 ConfigClassName:2.2 Syslog
 ConfigClassDescription:Syslog events logging related rules 
 ConfigClassSelected:Yes
 ConfigClassParentName:2. Control plane
+
+% if len(syslog.hosts)>0:
 <%
 syslogHosts=""
 for name,host in syslog.hosts.items():
@@ -593,11 +647,38 @@ ConfigRuleMatch:<code>${syslogHosts}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require a syslog server configured 
 ConfigRuleSelected:Yes
+ConfigRuleFix:<code>${syslogHosts}</code>
+
+% if len(syslog.severity)>0:
+ConfigRuleName:2.2.2 Syslog severity 
+ConfigRuleParentName:2.2 Syslog
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>^logging facility ${syslog.facility}$</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require a syslog facility configured 
+ConfigRuleSelected:Yes
+ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
+
+% endif 
+% if len(syslog.facility)>0:
+ConfigRuleName:2.2.3 Syslog severity 
+ConfigRuleParentName:2.2 Syslog
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>^logging facility ${syslog.facility}$</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require a syslog severity configured 
+ConfigRuleSelected:Yes
+ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
+% endif 
 % endif
 #}}}
 
 #{{{BGP auth
-% if bgp:
+% if device.l3 and bgp:
 ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
 ConfigClassSelected:Yes
@@ -609,7 +690,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:BGP_PeerTemplate
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^ password.*</code>
+ConfigRuleMatch:<code>password.*</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require authentication defined within every peer-policy  
 ConfigRuleSelected:Yes
@@ -620,7 +701,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:BGP_Peer
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^password.*|^inherit peer-policy.*)</code>
+ConfigRuleMatch:<code>(password.*|inherit peer-policy.*)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require peer-policy or explicit auth defined for every BGP peer  
 ConfigRuleSelected:Yes
@@ -628,7 +709,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{OSPF auth
-% if ospf:
+% if device.l3 and ospf:
 ConfigClassName:2.4 OSPF
 ConfigClassDescription:OSPF related rules
 ConfigClassSelected:Yes
@@ -639,7 +720,7 @@ ConfigRuleParentName:2.4 OSPF
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:OSPF_Router
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^passive-interface default$</code>
+ConfigRuleMatch:<code>passive-interface default$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require default mode for interfaces to be passive
 ConfigRuleSelected:Yes
@@ -649,7 +730,6 @@ ConfigRuleParentName:2.4 OSPF
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:OSPF_Router
 ConfigRuleType:Forbidden
-#switchport\n(?!((.+\n)*switchport mode (access|trunk)))
 ConfigRuleMatch:<code>^ area (\d+) (?!authentication message-digest)$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require message-digest auth for every OSPF area defined
@@ -658,7 +738,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{HSRP auth
-% if true or (device.l3 and hsrp):
+% if device.l3 and hsrp:
 ConfigClassName:2.5 HSRP 
 ConfigClassDescription:HSRP
 ConfigClassSelected:Yes
@@ -669,7 +749,7 @@ ConfigRuleParentName:2.5 HSRP
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:HSRPGroup
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^standby group (\d+) authentication</code>
+ConfigRuleMatch:<code>standby group (\d+) authentication</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an authentication to be configured in every HSRP group
 ConfigRuleSelected:Yes
@@ -679,7 +759,7 @@ ConfigRuleParentName:2.5 HSRP
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:HSRPGroup
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^standby group (\d+) authentication md5</code>
+ConfigRuleMatch:<code>standby group (\d+) authentication md5</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an authentication (md5) to be configured in every HSRP group
 ConfigRuleSelected:Yes
@@ -691,27 +771,30 @@ ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((switchport mode trunk)|((?!^switchport$)(.+\
+ConfigRuleMatch:<code>(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
 )*^!$))|((switchport mode access\
 )|(.+\
-)*|^no cdp run$)</code>
+)*|^ no cdp run$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid CDP to run on endhost interfaces
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE\
+no cdp run
 
-% if device.l3:
+% if device.l3 and device.l2:
 ConfigRuleName:2.7 Forbid DTP trunk negotiation  
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
-ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>switchport\n(?!((.+\n)* switchport mode (access|trunk)))</code>
+ConfigRuleType:Required
+ConfigRuleMatch:<code>(^ shutdown)|(^ no switchport)|(switchport mode (access|trunk))</code>
+#ConfigRuleMatch:<code>(^ switchport\n(?!((.+\n)* switchport mode (access|trunk))))</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid DTP trunk negotiation  
 ConfigRuleSelected:Yes
 
-% else:
+% elif device.l2:
 ConfigRuleName:2.7 Forbid DTP trunk negotiation  
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
@@ -722,7 +805,40 @@ ConfigRuleMatch:<code>(switchport mode (access|trunk))|(^ shutdown$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid DTP trunk negotiation  
 ConfigRuleSelected:Yes
+% endif
 
+# Spanning tree
+% if device.l2:
+ConfigClassName:2.8 STP 
+ConfigClassDescription:STP related rules
+ConfigClassSelected:Yes
+ConfigClassParentName:2. Control plane
+
+ConfigRuleName:2.8.1 Require STP portfast   
+ConfigRuleParentName:2. Control plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSHwInterface
+ConfigRuleInstance:.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(spanning-tree portfast$)</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require STP portfast feature to be configured on access ports   
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+spanning-tree portfast
+
+ConfigRuleName:2.8.2 Require STP BPDU guard   
+ConfigRuleParentName:2. Control plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSHwInterface
+ConfigRuleInstance:.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(spanning-tree bpduguard enable$)</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require STP BPDU guard feature to be configured on access ports   
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+spanning-tree bpduguard enable
 % endif
 #}}}
 
@@ -738,12 +854,13 @@ ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
 
 #{{{ VTY
-% if vty and len(vty.protocols)>0:
+% if vty:
 ConfigClassName:1.1.1 Limit VTY remote access 
 ConfigClassDescription:Limit remote access methods
 ConfigClassSelected:Yes
 ConfigClassParentName:2. Control plane 
 
+% if len(vty.protocols)>0:
 ConfigRuleName:1.1.1.1 VTY allowed input transport
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
@@ -754,26 +871,36 @@ ConfigRuleMatch:<code>transport input ${getRegexOfList(vty.protocols.keys())}</c
 ConfigRuleImportance:10
 ConfigRuleDescription:VTY allowed input transport
 ConfigRuleSelected:Yes
+ConfigRuleFix:line INSTANCE${"\\"}
+transport input ${getRegexOfList(vty.protocols.keys())}
+% else:
+ConfigRuleName:1.1.1.1 VTY allowed input transport
+ConfigRuleParentName:1.1.1 Limit VTY remote access
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSLine
+ConfigRuleInstance:vty.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>transport input none</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:VTY allowed input transport
+ConfigRuleSelected:Yes
+ConfigRuleFix:line INSTANCE${"\\"}
+transport input none
+% endif 
 
-% if device.ip4:
-<%
-vty4_aclName="ERR_ACL_NOT_DEFINED"
-if vty.acl_v4 is not None:
-	if 'cisco' in vty.acl_v4.name:
-		vty4_aclName=vty.acl_v4.name['cisco']
-	elif 'generic' in vty.acl_v4.name:
-		vty4_aclName=vty.acl_v4.name['generic']
-%>
+% if device.ip4 and vty.acl is not None:
 ConfigRuleName:1.1.1.2 Require VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^ access-class ${vty4_aclName} in$</code>
+ConfigRuleMatch:<code>^ access-class ${getAclName(vty.acl)} in$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 applied
 ConfigRuleSelected:Yes
+ConfigRuleFix:line INSTANCE${"\\"}
+access-class ${vty.acl} in
 
 ConfigRuleName:1.1.1.3 Require VTY ACL for Ipv4 defined
 ConfigRuleParentName:1.1.1 Limit VTY remote access
@@ -781,32 +908,26 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl_v4)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
-
+ConfigRuleFix:${printAcl(vty.acl)}
 % endif 
 
-% if device.ip6:
-<%
-vty6_aclName="ERR_ACL_NOT_DEFINED"
-if vty.acl_v6 is not None:
-	if 'cisco' in vty.acl_v6.name:
-		vty4_aclName=vty.acl_v4.name['cisco']
-	elif 'generic' in vty.acl_v6.name:
-		vty4_aclName=vty.acl_v6.name['generic']
-%>
+% if device.ip6 and vty.acl6 is not None:
 ConfigRuleName:1.1.1.4 Require VTY ACL for Ipv6 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ipv6 access-class ${vty6_aclName}</code>
+ConfigRuleMatch:<code>ipv6 access-class ${getAclName(vty.acl6)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
+ConfigRuleFix:line INSTANCE${"\\"}
+access-class ${vty.acl6} in
 
 ConfigRuleName:1.1.1.5 Require VTY ACL for Ipv6 defined
 ConfigRuleParentName:1.1.1 Limit VTY remote access
@@ -814,10 +935,11 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl_v6)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl6)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
+ConfigRuleFix:${printAcl(vty.acl6)}
 % endif 
 #}}}
 
@@ -839,8 +961,8 @@ ConfigRuleName:1.1.3 Forbid IP HTTP Server
 ConfigRuleParentName:1.1 Access control rules
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
-ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>^ip http server</code>
+ConfigRuleType:Required
+ConfigRuleMatch:<code>no ip http server</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Disable HTTP server.
 ConfigRuleSelected:yes
@@ -849,10 +971,10 @@ ConfigRuleName:1.1.4 Forbid IP HTTP Secure Server
 ConfigRuleParentName:1.1 Access control rules
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
-ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>^ip http secure-server</code>
+ConfigRuleType:Required
+ConfigRuleMatch:<code>no ip http secure-server</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Disable HTTP server.
+ConfigRuleDescription:Disable HTTPS server.
 ConfigRuleSelected:yes
 
 #{{{ SSH
@@ -876,7 +998,7 @@ ConfigRuleParentName:1.2 SSH
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ip domain-name \S+</code>
+ConfigRuleMatch:<code>(ip domain-name \S+)|(ip domain name \S+)</code>
 ConfigRuleImportance:7
 ConfigRuleDescription:Configure the router�s domain name
 ConfigRuleSelected:yes
@@ -901,15 +1023,16 @@ ConfigRuleImportance:7
 ConfigRuleDescription:Verify that an idle timeout has been configured for SSH sessions.
 ConfigRuleSelected:yes
 
-ConfigRuleName:1.2.5 - Limit the Number of SSH Authentication Tries
-ConfigRuleParentName:1.2 SSH
-ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSGlobal
-ConfigRuleType:Required
-ConfigRuleMatch:<code>ip ssh authentication-retries \d+</code>
-ConfigRuleImportance:7
-ConfigRuleDescription:Verify the device is configured to limit the number of SSH authentication attempts.
-ConfigRuleSelected:yes
+# login block-for should be better
+#ConfigRuleName:1.2.5 - Limit the Number of SSH Authentication Tries
+#ConfigRuleParentName:1.2 SSH
+#ConfigRuleVersion:version 1[0125]\.*
+#ConfigRule#Context:IOSGlobal
+#ConfigRuleType:Required
+#ConfigRuleMatch:<code>ip ssh authentication-retries \d+</code>
+#ConfigRuleImportance:7
+#ConfigRuleDescription:Verify the device is configured to limit the number of SSH authentication attempts.
+#ConfigRuleSelected:yes
 
 ConfigRuleName:1.2.6 - Require SSH version 2
 ConfigRuleParentName:1.2 SSH

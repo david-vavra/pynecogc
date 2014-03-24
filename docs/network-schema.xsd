@@ -118,29 +118,6 @@
 	
 	<xs:simpleType name="syslog_facility">
 	  <xs:restriction base="xs:string">
-		<xs:enumeration value="1"/>
-		<xs:enumeration value="2"/>
-		<xs:enumeration value="3"/>
-		<xs:enumeration value="4"/>
-		<xs:enumeration value="5"/>
-		<xs:enumeration value="6"/>
-		<xs:enumeration value="7"/>
-		<xs:enumeration value="8"/>
-		<xs:enumeration value="9"/>
-		<xs:enumeration value="10"/>
-		<xs:enumeration value="11"/>
-		<xs:enumeration value="12"/>
-		<xs:enumeration value="13"/>
-		<xs:enumeration value="14"/>
-		<xs:enumeration value="15"/>
-		<xs:enumeration value="16"/>
-		<xs:enumeration value="17"/>
-		<xs:enumeration value="18"/>
-		<xs:enumeration value="19"/>
-		<xs:enumeration value="20"/>
-		<xs:enumeration value="21"/>
-		<xs:enumeration value="22"/>
-		<xs:enumeration value="23"/>
 		<xs:enumeration value="kern"/>
 		<xs:enumeration value="user"/>
 		<xs:enumeration value="mail"/>
@@ -166,14 +143,6 @@
 	
 	<xs:simpleType name="syslog_severity">
 	  <xs:restriction base="xs:string">
-	  	<xs:enumeration value="0"/>
-	  	<xs:enumeration value="1"/>
-		<xs:enumeration value="2"/>
-		<xs:enumeration value="3"/>
-		<xs:enumeration value="4"/>
-		<xs:enumeration value="5"/>
-		<xs:enumeration value="6"/>
-		<xs:enumeration value="7"/>
 		<xs:enumeration value="emergency"/>
 		<xs:enumeration value="panic"/>
 		<xs:enumeration value="alert"/>
