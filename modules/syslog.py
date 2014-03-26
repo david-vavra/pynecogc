@@ -4,11 +4,12 @@ from yapsy.IPlugin import IPlugin
 
 class Syslog(IPlugin):
     def __init__(self):
-        self.hosts={}
-        self.facility=""
-        self.severity=""
+        self.hosts=None
+        self.facility=None
+        self.severity=None
 
     def _addServer(self,id,host):
+        self.hosts={}
         if len(host)>0 and id is not None:
             self.servers[id]=host
 

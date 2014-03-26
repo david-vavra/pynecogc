@@ -10,12 +10,13 @@ class VTY(IPlugin):
     def __init__(self):
         self.acl=None
         self.acl6=None
-        self.protocols = {}
-        self.vlan = 1
-        self.gw = ""
+        self.protocols = None
+        self.vlan = None
+        self.gw = None
 
 
     def _addProtocol(self,protocol,version=2,timeout=600,retries=3):
+        self.protocols={}
         if protocol not in self.protocols:
             self.protocols[protocol] = {}
             if version is not None:

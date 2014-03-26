@@ -8,7 +8,7 @@ from utils import ErrOptionalData
 
 class NTP(IPlugin):
     def __init__(self):
-        self.hosts = {}
+        self.hosts = None
         self.acl = None
         self.acl6 = None
 
@@ -20,6 +20,7 @@ class NTP(IPlugin):
         else:
             raise ErrOptionalData("ntp:Unable to add ACL, invalid instance: {0}".format(type(acl)))
     def _addHost(self,id,host):
+        self.hosts={}
         if id not in self.hosts:
             self.hosts[id] = host
 
