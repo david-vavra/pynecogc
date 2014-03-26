@@ -1,0 +1,7 @@
+[Core]
+Name = ipSourceGuard
+Module = ip_source_guard
+
+[Documentation]
+Author = David Vavra
+Version = 0.1

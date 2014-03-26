@@ -7,7 +7,7 @@ import copy
 from yapsy import logging
 
 
-PLUGIN_PATH='/usr/local/lib/python3.3/dist-packages/pyrage/modulaes/'
+PLUGIN_PATH='/usr/local/lib/python3.3/dist-packages/pyrage/modules/'
 
 class NetworkParser():
 
@@ -116,5 +116,3 @@ pluginManager.setPluginPlaces([PLUGIN_PATH])
 pluginManager.collectPlugins()
 for plugin in pluginManager.getAllPlugins():
     instances[plugin.name]=plugin.plugin_object
-
-

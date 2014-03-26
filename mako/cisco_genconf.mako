@@ -120,4 +120,11 @@ conf t
 ip arp inspection vlan ${arp_inspection.vlanRange}
 	% endif 
 % endif 
+! --------------------------
+! ip source guard 
+% if ipSourceGuard is not None and ipSourceGuard.vlan_range is not None: 
+! 
+! VLAN RANGE ${ipSourceGuard.vlan_range}
+!
+% endif
 

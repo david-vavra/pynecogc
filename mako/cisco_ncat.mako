@@ -557,9 +557,15 @@ ConfigRuleSelected:Yes
 % endif
 #}}}
 
-% if ipSourceGuard is not None and len(ipSourceGuard.vlanRange)>0:
-ConfigRuleName:3.6 Require IP source guard to be enabled on given interfaces
-ConfigRuleParentName:3. Data plane
+% if ipSourceGuard is not None:
+% if ipSourceGuard.vlanRange is not None:
+ConfigClassName:3.6 IP source guard
+ConfigClassDescription:IP source guard related rules 
+ConfigClassSelected:Yes
+ConfigClassParentName:3. Data plane
+
+ConfigRuleName:3.6.1 Require IP source guard to be enabled on given interfaces
+ConfigRuleParentName:3.6 IP source guard
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:AccessPort
 ConfigRuleInstance:${makeRegexOfContextInstanceList(makeListOfVlanRange(ipSourceGuard.vlanRange))}
@@ -568,7 +574,36 @@ ConfigRuleMatch:<code>ip verify source$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require IP source guard to be enabled on given interfaces 
 ConfigRuleSelected:Yes
-% endif 
+ConfigRuleFix:interface INSTANCE${"\\"}
+ ip verify source
+
+ConfigRuleName:3.6.2 Forbid IP source guard to be configured on other interfaces 
+ConfigRuleParentName:3.6 IP source guard
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:AccessPort
+ConfigRuleInstance:${makeNegRegexOfContextInstanceList(makeListOfVlanRange(ipSourceGuard.vlanRange))}
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>ip verify source$</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid IP source guard to be configured on other interfaces 
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ no ip verify source
+% else:
+ConfigRuleName:3.6.1 Forbid IP source guard to be enabled on any interface
+ConfigRuleParentName:3.6 IP source guard
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:AccessPort
+ConfigRuleInstance:.*
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>ip verify source$</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid IP source guard to be enabled on any interface 
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ no ip verify source
+% endif
+% endif
 
 ConfigRuleName:3.7 Limit number of MAC addresses on an interface
 ConfigRuleParentName:3. Data plane
