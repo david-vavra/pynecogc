@@ -104,4 +104,20 @@ conf t
 	% if dhcp_snooping.vlanRange is not None:
 ip dhcp snooping vlan ${dhcp_snooping.vlanRange}
 	% endif 
+% endif
+! --------------------------
+! arp inspection
+% if arp_inspection is not None:
+	% if arp_inspection.trustedPorts is not None:
+		% for port in arp_inspection.trustedPorts:
+interface ${port}
+ ip arp inspection trust
+		% endfor 
+end 
+conf t
+	% endif
+	% if arp_inspection.vlanRange is not None:
+ip arp inspection vlan ${arp_inspection.vlanRange}
+	% endif 
 % endif 
+

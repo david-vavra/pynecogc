@@ -434,7 +434,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(dhcpSnooping.trustedPorts)}
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip dhcp snooping trust</code>
+ConfigRuleMatch:<code>^ ip dhcp snooping trust$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid any other dhcp snooping trusted ports 
 ConfigRuleSelected:Yes
@@ -447,7 +447,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip dhcp snooping trust</code>
+ConfigRuleMatch:<code>^ ip dhcp snooping trust$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid any dhcp snooping trusted ports 
 ConfigRuleSelected:Yes
@@ -458,48 +458,51 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 #}}}
 
 #{{{ Arp inspection
-<%
-if arpInspection is not None and len(arpInspection.vlanRange)>0:
-	arpInspection_selected=True
-else:
-	arpInspection_selected=False
-%>
 
-% if arpInspection_selected:
+% if arpInspection is not None:
 ConfigClassName:3.4 Arp inspection 
 ConfigClassDescription:Arp inspection related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
 
+% if arpInspection.vlanRange is not None:
 ConfigRuleName:3.4.1 Require arp inspection enabled
 ConfigRuleParentName:3.4 Arp inspection 
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ip arp inspection vlan ${arpInspection.vlanRange}</code>
+ConfigRuleMatch:<code>^ip arp inspection vlan ${arpInspection.vlanRange}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require Arp inspection enabled
 ConfigRuleSelected:Yes
+ConfigRuleFix:ip arp inspection vlan ${arpInspection.vlanRange}
+% else:
+ConfigRuleName:3.4.1 Forbid arp inspection to be enabled for any vlan
+ConfigRuleParentName:3.4 Arp inspection
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSGlobal
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>^ip arp inspection vlan</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid DHCP snooping enabled for any vlans
+ConfigRuleSelected:Yes
+ConfigRuleFix:no ip arp inspection vlan
+% endif 
 
-
-<%
-if len(arpInspection.trustedPorts)>0:
-	arpInspection_trustedPorts_selected=True
-else: 
-	arpInspection_trustedPorts_selected=False
-%>
-% if arpInspection_trustedPorts_selected: 
+% if arpInspection.trustedPorts is not None: 
 ConfigRuleName:3.4.2 Require Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(arpInspection.trustedPorts)}
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ip arp inspection trust</code>
+ConfigRuleMatch:<code>^ ip arp inspection trust$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require specific ports to be configured as \
-Arp snooping trusted ports
+Arp inspection trusted ports
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ ip arp inspection trust
 
 ConfigRuleName:3.4.3 Forbid any other Arp inspection trusted ports
 ConfigRuleParentName:3.4 Arp inspection
@@ -507,12 +510,14 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(arpInspection.trustedPorts)}
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip arp inspection trust</code>
+ConfigRuleMatch:<code>^ ip arp inspection trust$</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Require DHCP snooping trusted ports
+ConfigRuleDescription:Forbid any other arp inspection port than those explicitly defined 
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ no ip arp inspection trust
 % else:
-ConfigRuleName:3.4.2 Forbid Arp trusted ports
+ConfigRuleName:3.4.2 Forbid any Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
@@ -521,8 +526,10 @@ ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip arp inspection trust</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid any ports to be configured as \
-Arp snooping trusted ports
+Arp inspection trusted ports
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ no ip arp inspection trust
 % endif
 % endif 
 #}}}
