@@ -91,5 +91,17 @@ vtp domain ${vtp.domain}
 	% endif 	
 % endif
 ! --------------------------
-
-
+! dhcp snooping
+% if dhcp_snooping is not None:
+	% if dhcp_snooping.trustedPorts is not None:
+		% for port in dhcp_snooping.trustedPorts:
+interface ${port}
+ ip dhcp snooping trust
+		% endfor 
+end 
+conf t
+	% endif
+	% if dhcp_snooping.vlanRange is not None:
+ip dhcp snooping vlan ${dhcp_snooping.vlanRange}
+	% endif 
+% endif 

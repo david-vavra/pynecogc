@@ -387,15 +387,30 @@ ConfigClassDescription:DHCP snooping related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
 
+% if dhcp_snooping.vlanRange is not None:
 ConfigRuleName:3.3.1 Require DHCP snooping enabled for specified vlans
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
-ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>^ip dhcp snooping vlan (?!(${dhcpSnooping.vlanRange})).+$</code>
+ConfigRuleType:Required
+ConfigRuleMatch:<code>^ip dhcp snooping vlan (${dhcpSnooping.vlanRange})$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require DHCP snooping enabled
 ConfigRuleSelected:Yes
+ConfigRuleFix:ip dhcp snooping vlan ${dhcpSnooping.vlanRange}
+
+% else:
+ConfigRuleName:3.3.1 Forbid DHCP snooping enabled for any vlans
+ConfigRuleParentName:3.3 DHCP snooping
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSGlobal
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>^ip dhcp snooping vlan</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid DHCP snooping enabled for any vlans
+ConfigRuleSelected:Yes
+ConfigRuleFix:no ip dhcp snooping vlan
+% endif 
 
 % if len(dhcpSnooping.trustedPorts)>0:
 ConfigRuleName:3.3.2 Require chosen DHCP trusted ports
@@ -404,11 +419,13 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(dhcpSnooping.trustedPorts)}
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ip dhcp-snooping trust</code>
+ConfigRuleMatch:<code>ip dhcp snooping trust</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require specific ports to be configured as \
 DHCP snooping trusted ports 
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ ip dhcp snooping trust
 
 # and Forbid any other ports to be trusted 
 ConfigRuleName:3.3.3 Forbid any other dhcp snooping trusted ports 
@@ -417,11 +434,12 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(dhcpSnooping.trustedPorts)}
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip dhcp-snooping trust</code>
+ConfigRuleMatch:<code>ip dhcp snooping trust</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid any other dhcp snooping trusted ports 
 ConfigRuleSelected:Yes
-
+ConfigRuleFix:interface INSTANCE${"\\"}
+ no ip dhcp snooping trust
 % else:
 ConfigRuleName:3.3.2 Forbid any dhcp snooping trusted ports 
 ConfigRuleParentName:3.3 DHCP snooping
@@ -429,10 +447,12 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip dhcp-snooping trust</code>
+ConfigRuleMatch:<code>ip dhcp snooping trust</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid any dhcp snooping trusted ports 
 ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+ no ip dhcp snooping trust
 % endif 
 % endif 
 #}}}
