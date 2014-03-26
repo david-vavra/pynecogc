@@ -78,4 +78,18 @@ logging trap ${syslog.severity}
 	% endif
 % endif
 ! --------------------------
+! vtp 
+% if vtp is not None:
+	% if vtp.version is not None:
+vtp version ${vtp.version}
+	% endif 
+	% if vtp.mode is not None:
+vtp mode ${vtp.mode}
+	% endif 	
+	% if vtp.domain is not None:
+vtp domain ${vtp.domain}
+	% endif 	
+% endif
+! --------------------------
+
 
