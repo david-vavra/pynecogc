@@ -535,25 +535,24 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 #}}}
 
 #{{{ URPF
-% if uRPF is not None and (device.l3 == True and uRPF.mode.lower() is not 'none'):
+% if uRPF is not None and (device.l3 == True and uRPF.mode is not None):
 ConfigClassName:3.5 URPF
 ConfigClassDescription:URPF related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
 
-# shouldn't be on all but the before specified?
-% if uRPF.mode is not 'none' and uRPF.mode.lower() in ['strict','loose']:
 ConfigRuleName:3.5.1 Require chosen default urpf mode on every interface
 ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:(.+Ethernet)|(Vlan.+)
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|switchport|shutdown</code>
+ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|^ switchport$|^ shutdown$</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Require chosen default urpf mode on every interface
+ConfigRuleDescription:Require chosen default urpf mode on every L3 interface
 ConfigRuleSelected:Yes
-% endif
+ConfigRuleFix:interface INSTANCE${"\\"}
+ ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'}
 % endif
 #}}}
 

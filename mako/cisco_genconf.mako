@@ -133,6 +133,15 @@ ip arp inspection vlan ${arp_inspection.vlanRange}
 ip name-server ${' '.join(dns.hosts.values())}
 % endif
 
+% if device.l3:
+! --------------------------
+! uRPF
+% if urpf is not None and urpf.mode is not None:
+! SET URPF MODE ${urpf.mode} ON L3 INTERFACES !
+! ip verify unicast source reachable-via ${'rx' if urpf.mode.lower()=='strict' else 'any'}
+% endif 
+% endif 
+
 
 		
 
