@@ -127,4 +127,13 @@ ip arp inspection vlan ${arp_inspection.vlanRange}
 ! VLAN RANGE ${ipSourceGuard.vlan_range}
 !
 % endif
+! --------------------------
+! DNS
+% if dns is not None and dns.hosts is not None:
+ip name-server ${' '.join(dns.hosts.values())}
+% endif
+
+
+		
+
 
