@@ -10,7 +10,7 @@ class DNS(IPlugin):
     def addHost(self,id,host):
         self.hosts[id] = host
 
-    def parseContext(self,context):
+    def parseContext(self,context,*args):
         for dns in context.iter('dns_host'):
             for dnsServer in dns.iter('dns_host'):
                 self.addHost(dnsServer.attrib['id'],dnsServer.text)

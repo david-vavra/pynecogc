@@ -16,7 +16,7 @@ class IP_Source_Guard(IPlugin):
         else:
             self.vlanRange = vlanRange
 
-    def parseContext(self,context):
+    def parseContext(self,context,*args):
         instance=self
         for ipsg in context.iter('ip_source_guard'):
             if context.find('vlan_range') is not None:

@@ -31,7 +31,7 @@ class DHCPSnooping(IPlugin):
         else:
             self.vlanRange = vlanRange
 
-    def parseContext(self,contextToParse):
+    def parseContext(self,contextToParse,*args):
         for dhcp in contextToParse.iter('dhcp_snooping'):
             vlanRange = dhcp.find('vlan_range')
             if vlanRange is not None:

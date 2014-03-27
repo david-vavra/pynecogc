@@ -1,4 +1,4 @@
-<%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
+l<%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
 
 # FUNCTIONS
 <%def name="makeRegexOfContextInstanceList(contextList)">\
@@ -375,19 +375,14 @@ ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip directed-broadcast</code>
 
 #{{{DHCP Snooping
-<%
-if dhcpSnooping is not None and len(dhcpSnooping.vlanRange)>0:
-	dhcpSnooping_selected=True
-else:
-	dhcpSnooping_selected=False
-%>
-% if dhcpSnooping_selected:
+
+% if dhcpSnooping is not None:
 ConfigClassName:3.3 DHCP snooping 
 ConfigClassDescription:DHCP snooping related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
 
-% if dhcp_snooping.vlanRange is not None:
+% if dhcpSnooping.vlanRange is not None:
 ConfigRuleName:3.3.1 Require DHCP snooping enabled for specified vlans
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion:version 1[0125]\.*
@@ -412,7 +407,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:no ip dhcp snooping vlan
 % endif 
 
-% if len(dhcpSnooping.trustedPorts)>0:
+% if dhcpSnooping.trustedPorts is not None:
 ConfigRuleName:3.3.2 Require chosen DHCP trusted ports
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion:version 1[0125]\.*
@@ -617,7 +612,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 switchport port-security maximum 1
 
-ConfigRuleName:3.8 Limit amount odf broadcast traffic on an interface
+ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
@@ -625,7 +620,7 @@ ConfigRuleInstance:.*
 ConfigRuleType:Required
 ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Limit number of MAC addresses on an interface 
+ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 switchport port-security maximum 1
@@ -636,7 +631,7 @@ switchport port-security maximum 1
 ###################
 #{{{ Control plane
 ###################
-% if ntp is not None and len(ntp.hosts)>0:
+% if ntp is not None and ntp.hosts is not None:
 ConfigClassName:2.1 NTP 
 ConfigClassDescription:NTP related rules
 ConfigClassSelected:Yes
@@ -692,7 +687,7 @@ ConfigClassDescription:Syslog events logging related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:2. Control plane
 
-% if len(syslog.hosts)>0:
+% if syslog.hosts is not None:
 <%
 syslogHosts=""
 for name,host in syslog.hosts.items():
@@ -710,7 +705,7 @@ ConfigRuleDescription:Require a syslog server configured
 ConfigRuleSelected:Yes
 ConfigRuleFix:<code>${syslogHosts}</code>
 
-% if len(syslog.severity)>0:
+% if syslog.severity is not None:
 ConfigRuleName:2.2.2 Syslog severity 
 ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
@@ -723,7 +718,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
 
 % endif 
-% if len(syslog.facility)>0:
+% if syslog.facility is not None:
 ConfigRuleName:2.2.3 Syslog severity 
 ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
@@ -735,6 +730,7 @@ ConfigRuleDescription:Require a syslog severity configured
 ConfigRuleSelected:Yes
 ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
 % endif 
+% endif
 % endif
 #}}}
 
@@ -921,7 +917,7 @@ ConfigClassDescription:Limit remote access methods
 ConfigClassSelected:Yes
 ConfigClassParentName:2. Control plane 
 
-% if len(vty.protocols)>0:
+% if vty.protocols is not None:
 ConfigRuleName:1.1.1.1 VTY allowed input transport
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*

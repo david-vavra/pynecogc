@@ -19,7 +19,7 @@ class Syslog(IPlugin):
     def _changeSeverity(self,severity):
         self.severity=severity
 
-    def _parseContext(self,context):
+    def _parseContext(self,context,*args):
         for syslog in context.iter('syslog'):
             if 'severity' in syslog.attrib:
                 self.changeSeverity(syslog.attrib['severity'])

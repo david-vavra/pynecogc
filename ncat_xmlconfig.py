@@ -49,7 +49,7 @@ def main():
     """
      generate ncat rules for every device
     """
-    lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/docs'])
+    lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/mako'])
     mkt=Template(open(inputArgs.rulesFile_template).read(),lookup=lookup,strict_undefined=True)
     for dev,instance in deviceInstances.items():
         f=open('{0}.rules'.format(dev),'w')
@@ -85,9 +85,6 @@ def main():
 
     except subprocess.CalledProcessError as e:
             raise SystemExit(e.returncode)
-
-
-
 
 
 if __name__=="__main__":

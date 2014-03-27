@@ -38,4 +38,4 @@ class NTP(IPlugin):
                 self._addAcl(aclId,acl)
 
             for ntpServer in contextToParse.iter('host'):
-                self.addHost(ntpServer.attrib['id'],ntpServer.text)
+                self._addHost(ntpServer.attrib['id'],ntpServer.text)

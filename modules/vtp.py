@@ -10,7 +10,7 @@ class VTP(IPlugin):
         self.version=None
 
 
-    def parseContext(self,context):
+    def parseContext(self,context,*args):
         for vtp in context.iter('vtp'):
             if vtp.find('mode') is not None:
                 self.mode=vtp.find('mode').text

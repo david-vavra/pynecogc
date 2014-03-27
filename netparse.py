@@ -1,6 +1,7 @@
 __author__ = 'David Vavra'
 
 import xml.etree.ElementTree as xmlet
+from pyrage.acl import ACL
 from yapsy.PluginManager import PluginManager
 import copy
 
@@ -15,7 +16,8 @@ class NetworkParser():
         self.parsedDevices = {}
         self.logger = logger
         self.deviceDef  = None
-        self.acls = {}
+
+
 
         """
          instance of currently parsed device, so it's attributes could be accessed
@@ -39,7 +41,7 @@ class NetworkParser():
                     f=definitionsFile,err=e.msg)
             )
             raise SystemExit(1)
-
+        self.acls = ACL(self.network)
 
     def parseDevice(self,dev):
 
@@ -93,7 +95,7 @@ class NetworkParser():
             MEMBER_GROUP (in as-in-file order) < DEVICE
         """
         for name,instance in instances.items():
-            instance.parseContext(context)
+            instance.parseContext(context,self.acls)
         return
 
 class Device():

@@ -28,7 +28,7 @@ class ArpInspection(IPlugin):
             self.vlanRange = vlanRange
 
 
-    def parseContext(self,contextToParse):
+    def parseContext(self,contextToParse,*args):
         for arp in contextToParse.iter('arp_inspection'):
             arpInspectionInstance=self
             vlanRange = contextToParse.find('vlan_range')

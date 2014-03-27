@@ -15,7 +15,7 @@ class URPF(IPlugin):
             ))
         self.mode=mode
 
-    def parseContext(self,context):
+    def parseContext(self,context,*args):
         for urpf in context.iter('urpf'):
             if 'type' not in urpf.attrib:
                 raise ErrRequiredData("No urpf mode specified. Attribute 'type' is missing.")
