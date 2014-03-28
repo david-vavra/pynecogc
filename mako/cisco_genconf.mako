@@ -1,3 +1,78 @@
+<%!
+""" AAA """
+def printAAAServers(aaa):
+	aaaServers=""
+	 """ print groups """
+	for groupName in aaa.groups:
+		group = aaa.groups[groupName]
+		aaaServers += "aaa group server {0} {1}\\\n".format(
+			group['type'],
+			groupName
+			)
+		
+		for hostName in group['hosts']:
+			aaaServers += " server name {0}\\\n".format(hostName)
+
+	""" print hosts """
+	for hostName in aaa.hosts:
+		host = aaa.hosts[hostName]
+		if 'ip' in host:
+			aaaServers += "{0} server {1}\\\n".format(
+				host['type'],
+				hostName
+			)
+			aaaServers += " address ipv4 {0}\\\n".format(
+				host['ip']
+			)
+
+	return aaaServers.strip()
+	
+def printAAAServers_old(aaa):
+	output=""
+	for host in aaa.hosts:
+		output+="{1}-server host {0}.*\\\n".format(
+			aaa.hosts[host]['ip'],
+			aaa.hosts[host]['type'].lower())
+	return output.strip()
+	
+def printAAAMethodsLists():
+	aaa_methodsLists=""
+	for line in aaa.methodsLists:
+		methods=""
+		for method in aaa.methodsLists[line]['methods']:
+			methods+=method+' '
+		methods=methods.strip()
+		aaa_methodsLists+="aaa authentication {lineType} {name} {methods}\\\n".format(
+				lineType=aaa.methodsLists[line]['type']['cisco'],
+				name=line,
+				""" because of possible tacacs+ """
+				methods=methods.replace('+','\+')
+				)
+			
+	return aaa_methodsLists.strip()
+				
+""" SNMP """ 
+def printSnmpCommunity(com):
+	if com['version'] == '1' or com['version'] == '2' or com['version'] == '2c':
+		community = com['community']
+	else:
+		return ERR_INVALID_VERSION
+	if com['privilege'].lower() in ['read-only','ro']:
+		priv = 'RO'
+	elif com['privilege'].lower() in ['read-write','rw']:
+		priv = 'RW'
+	else:
+		return ERR_INVALID_PRIV
+	if 'acl' in com:
+		aclName = getAclName(acl)
+	else:
+		acl_name = ""
+	return ("snmp-server community %s %s %s" % (
+		community,
+		priv,
+		aclName
+	)).strip()	
+%>
 ! --------------------------
 ! ntp 
 % if ntp is not None and len(ntp.hosts)>0:
@@ -140,7 +215,29 @@ ip name-server ${' '.join(dns.hosts.values())}
 ! SET URPF MODE ${urpf.mode} ON L3 INTERFACES !
 ! ip verify unicast source reachable-via ${'rx' if urpf.mode.lower()=='strict' else 'any'}
 % endif 
-% endif 
+% endif
+! --------------------------
+! AAA 
+aaa new-model
+% if aaa is not None:
+! aaa servers
+${printAAAServers(aaa)}
+! aaa methods lists
+${printAAAMethodsLists(aaa)}
+! enable secret fallback 
+enable secret 5 ! FIX 
+! Console authentication 
+line con 0
+ password ! FIX  
+ login authentication ! FIX
+ stopbits 1
+! vty fallback password 
+line vty 0 15 
+ password ! FIX 
+! --------------------------
+! SNMP
+
+
 
 
 		

@@ -234,68 +234,66 @@ def getAclName(acl):
 %>
 #}}}
 
-
 <%!
-def printTacacsServers(aaa):
+def printAAAServers(aaa):
 	aaaServers=""
-	 # print groups
+	""" print groups """
 	for groupName in aaa.groups:
 		group = aaa.groups[groupName]
-		if group['type'] == 'tacacs':
-			groupType = 'tacacs+'
-			aaaServers += "aaa group server {0} {1}\\\n".format(
-				groupType,
-				groupName
-				)
-		# print hosts
+		aaaServers += "aaa group server {0} {1}\\\n".format(
+			group['type'],
+			groupName
+			)
+		
 		for hostName in group['hosts']:
 			aaaServers += " server name {0}\\\n".format(hostName)
 
-	# print hosts
+	""" print hosts """
 	for hostName in aaa.hosts:
 		host = aaa.hosts[hostName]
-		if host['type'] == 'tacacs' and 'ip' in host:
-			hostType = "tacacs"
+		if 'ip' in host:
 			aaaServers += "{0} server {1}\\\n".format(
-				hostType,
+				host['type'],
 				hostName
 			)
 			aaaServers += " address ipv4 {0}\\\n".format(
 				host['ip']
 			)
-
-	return aaaServers
+	return aaaServers.strip()
 	
-def printTacacsServers_old(aaa):
+def printAAAServers_old(aaa):
 	output=""
 	for host in aaa.hosts:
-		if aaa.hosts[host]['type'].lower()=='tacacs':
-			output+="tacacs-server host {0}.*\\\n".format(aaa.hosts[host]['ip'])
-	return output[:-2]
-				
+		output+="{1}-server host {0}.*\\\n".format(
+			aaa.hosts[host]['ip'],
+			aaa.hosts[host]['type'].lower())
+	return output.strip()				
 %>
 
 <%!
-# SNMP 
-def printSnmpCommunity(com,acls=None):
+""" SNMP """ 
+def printSnmpCommunity(com):
 	if com['version'] == '1' or com['version'] == '2' or com['version'] == '2c':
 		community = com['community']
+	else:
+		return ERR_INVALID_VERSION
 	if com['privilege'].lower() in ['read-only','ro']:
 		priv = 'RO'
 	elif com['privilege'].lower() in ['read-write','rw']:
 		priv = 'RW'
 	else:
-		raise tools.InvalidDataGiven("Invalid community privileges specified: %s" % com['priv'],com)
-	if 'acl_id' in com and com['acl_id'] in acls:
-		acl=acls[com['acl_id']]
-		acl_name = acl.name['cisco' if 'cisco' in acl.name else 'generic'] 
+		return ERR_INVALID_PRIV
+	if 'acl' in com:
+		aclName = getAclName(acl)
 	else:
 		acl_name = ""
 	return ("snmp-server community %s %s %s" % (
 		community,
 		priv,
-		acl_name
+		aclName
 	)).strip()
+	
+	
 %>
 
 #}}}
@@ -1115,24 +1113,24 @@ ConfigClassDescription:Tacacs
 ConfigClassSelected:Yes
 ConfigClassParentName:1.3 AAA
 
-ConfigRuleName:1.3.1.1 Tacacs hosts and groups definition in a new format
+ConfigRuleName:1.3.1.1 AAA hosts and groups definition in a new format
 ConfigRuleParentName:1.3.1 Tacacs
 ConfigRuleVersion:version 1[5]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printTacacsServers(aaa)}</code>
+ConfigRuleMatch:<code>${printAAAServers(aaa)}</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Tacacs hosts and groups definition in a new format
+ConfigRuleDescription:AAA (tacacs+,radius) hosts and groups definition in a new format
 ConfigRuleSelected:Yes
 
-ConfigRuleName:1.3.1.1 Tacacs hosts definition in a old format
+ConfigRuleName:1.3.1.1 AAA hosts definition in a old format
 ConfigRuleParentName:1.3.1 Tacacs
 ConfigRuleVersion:version 1[012]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printTacacsServers_old(aaa)}</code>
+ConfigRuleMatch:<code>${printAAAServers_old(aaa)}</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Tacacs hosts definition in a old format
+ConfigRuleDescription:AAA (tacacs+,radius) hosts definition in a old format
 ConfigRuleSelected:Yes
 
 
@@ -1140,16 +1138,17 @@ ConfigRuleSelected:Yes
 <%
 aaa_methodsLists=[]
 aaa_methodsListsTypes=[]
+
 for line in aaa.methodsLists:
 	methods=""
 	for method in aaa.methodsLists[line]['methods']:
 		methods+=method+' '
-	methods=methods[:-1]
+	methods=methods.strip()
 	aaa_methodsLists.append(
 		"aaa authentication {lineType} {name} {methods}\\\n".format(
 			lineType=aaa.methodsLists[line]['type']['cisco'],
 			name=line,
-			methods=methods.replace('+','\+')
+			methods=methods.replace('+','\+') #because of possible tacacs+
 			)
 		)
 	aaa_methodsListsTypes.append(aaa.methodsLists[line]['type']['cisco'])
