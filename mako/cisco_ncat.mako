@@ -1,4 +1,4 @@
-l<%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
+<%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
 
 # FUNCTIONS
 <%def name="makeRegexOfContextInstanceList(contextList)">\
@@ -122,6 +122,8 @@ def makeListOfVlanRange(vlanRange):
 #{{{
 #{{{
 <%!
+import re 
+
 def printAcl(acl):
     validAclTypes = ['standard','extended']
     separator = "!"
@@ -218,11 +220,11 @@ def printAcl(acl):
             output += 'access-list {0} '.format(name) + (lineSyntax % lineArgs).strip() + '\\\n'
         else:
             output += (lineSyntax % lineArgs).rstrip() + '\\\n'
-    # strip newline at the end
+    
     output=output.replace('deny','deny  ')
     output=output.replace('0.0.0.0 255.255.255.255','any')
     
-    return output[:-2]
+    return re.sub(r'\\$','',output.strip())
     
 def getAclName(acl):
 	if acl is None: 
@@ -259,7 +261,7 @@ def printAAAServers(aaa):
 			aaaServers += " address ipv4 {0}\\\n".format(
 				host['ip']
 			)
-	return aaaServers.strip()
+	return re.sub(r'\\$','',aaaServers.strip())
 	
 def printAAAServers_old(aaa):
 	output=""
@@ -267,12 +269,13 @@ def printAAAServers_old(aaa):
 		output+="{1}-server host {0}.*\\\n".format(
 			aaa.hosts[host]['ip'],
 			aaa.hosts[host]['type'].lower())
-	return output.strip()				
+	return re.sub(r'\\$','',output.strip())				
 %>
 
 <%!
 """ SNMP """ 
-def printSnmpCommunity(com):
+def printSnmpCommunity(comId,snmp):
+	com=snmp.communities[comId]
 	if com['version'] == '1' or com['version'] == '2' or com['version'] == '2c':
 		community = com['community']
 	else:
@@ -283,10 +286,13 @@ def printSnmpCommunity(com):
 		priv = 'RW'
 	else:
 		return ERR_INVALID_PRIV
-	if 'acl' in com:
-		aclName = getAclName(acl)
+	if 'aclId' in com:
+		if com['aclId'] in snmp.acls:
+			aclName = getAclName(snmp.acls['aclId'])
+		else:
+			aclName="ERR_ACL_FOR_COMMUNITY_NOT_DEFINED"
 	else:
-		acl_name = ""
+		aclName = ""
 	return ("snmp-server community %s %s %s" % (
 		community,
 		priv,
@@ -514,7 +520,7 @@ ConfigRuleName:3.4.2 Forbid any Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
-ConfigRuleInstance:,* 
+ConfigRuleInstance:.* 
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip arp inspection trust</code>
 ConfigRuleImportance:10
@@ -550,12 +556,11 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 #}}}
 
 % if ipSourceGuard is not None:
-% if ipSourceGuard.vlanRange is not None:
 ConfigClassName:3.6 IP source guard
 ConfigClassDescription:IP source guard related rules 
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
-
+% if ipSourceGuard.vlanRange is not None:
 ConfigRuleName:3.6.1 Require IP source guard to be enabled on given interfaces
 ConfigRuleParentName:3.6 IP source guard
 ConfigRuleVersion:version 1[0125]\.*
@@ -670,15 +675,14 @@ ConfigRuleParentName:2.1 NTP
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ntp access-group peer ${ntp.acl.name if len(ntp.acl.name)>0 else ntp.acl.number['cisco']}</code>
+ConfigRuleMatch:<code>ntp access-group peer ${getAclName(ntp.acl)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict source of NTP queries to be applied
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>ntp access-group peer ${ntp.acl.name if len(ntp.acl.name)>0 else ntp.acl.number['cisco']}</code>
+ConfigRuleFix:<code>ntp access-group peer ${getAclName(ntp.acl)}</code>
 % endif 
 % endif
 
-#{{{ TODO add severity and facility
 % if syslog is not None:
 ConfigClassName:2.2 Syslog
 ConfigClassDescription:Syslog events logging related rules 
@@ -690,7 +694,7 @@ ConfigClassParentName:2. Control plane
 syslogHosts=""
 for name,host in syslog.hosts.items():
 	syslogHosts+="logging {0}\\\n".format(host)
-syslogHosts=syslogHosts[:-1]
+syslogHosts=syslogHosts[:-2]
 %>
 ConfigRuleName:2.2.1 Syslog logging 
 ConfigRuleParentName:2.2 Syslog
@@ -709,11 +713,11 @@ ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^logging facility ${syslog.facility}$</code>
+ConfigRuleMatch:<code>^logging facility ${syslog.severity}$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require a syslog facility configured 
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
+ConfigRuleFix:<code>logging facility ${syslog.severity}</code>
 
 % endif 
 % if syslog.facility is not None:
@@ -730,9 +734,7 @@ ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
 % endif 
 % endif
 % endif
-#}}}
 
-#{{{BGP auth
 % if device.l3 and bgp:
 ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
@@ -1107,7 +1109,6 @@ ConfigClassDescription:AAA
 ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
 
-# TODO test if tacacs in aaa 
 ConfigClassName:1.3.1 Tacacs
 ConfigClassDescription:Tacacs
 ConfigClassSelected:Yes
@@ -1187,7 +1188,7 @@ ConfigClassDescription:SNMP related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
 
-% if len(snmp.communities)>0:
+% if snmp.communities is not None:
 ConfigClassName:1.4.1 SNMP communities
 ConfigClassDescription:SNMP related rules 
 ConfigClassSelected:Yes
@@ -1204,7 +1205,7 @@ ConfigRuleParentName:1.4.1 SNMP communities
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printSnmpCommunity(com,snmp.acls)}</code>
+ConfigRuleMatch:<code>${printSnmpCommunity(index,snmp)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Required specific snmp communities to be defined
 ConfigRuleSelected:Yes

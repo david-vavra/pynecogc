@@ -50,7 +50,6 @@ class ACLv4():
     def __init__(self,aclId):
 
         self.id = aclId
-        self.acl = None
 
         self.name='NOT DEFINED'
         self.number={}

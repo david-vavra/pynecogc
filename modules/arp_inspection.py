@@ -30,11 +30,10 @@ class ArpInspection(IPlugin):
 
     def parseContext(self,contextToParse,*args):
         for arp in contextToParse.iter('arp_inspection'):
-            arpInspectionInstance=self
-            vlanRange = contextToParse.find('vlan_range')
+            vlanRange = arp.find('vlan_range')
             if vlanRange is not None:
-                arpInspectionInstance.addVlanRange(vlanRange.text)
-            for interface in contextToParse.iter('trusted_interface'):
-                arpInspectionInstance.addTrustedInt(interface.text)
+                self.addVlanRange(vlanRange.text)
+            for interface in arp.iter('trusted_interface'):
+                self.addTrustedInt(interface.text)
 
 

@@ -8,18 +8,18 @@ class Syslog(IPlugin):
         self.facility=None
         self.severity=None
 
-    def _addServer(self,id,host):
+    def addServer(self,id,host):
         self.hosts={}
         if len(host)>0 and id is not None:
-            self.servers[id]=host
+            self.hosts[id]=host
 
-    def _changeFacility(self,facility):
+    def changeFacility(self,facility):
         self.facility=facility
 
-    def _changeSeverity(self,severity):
+    def changeSeverity(self,severity):
         self.severity=severity
 
-    def _parseContext(self,context,*args):
+    def parseContext(self,context,*args):
         for syslog in context.iter('syslog'):
             if 'severity' in syslog.attrib:
                 self.changeSeverity(syslog.attrib['severity'])

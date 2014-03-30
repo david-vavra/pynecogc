@@ -13,12 +13,12 @@ class NTP(IPlugin):
         self.acl6 = None
 
     def _addAcl(self,aclId,acl):
-        if type(acl)==type(ACLv4):
+        if isinstance(acl,ACLv4):
             self.acl = acl
-        elif type(acl)==type(ACLv6):
+        elif isinstance(acl,ACLv6):
             self.acl6=acl
         else:
-            raise ErrOptionalData("ntp:Unable to add ACL, invalid instance: {0}".format(type(acl)))
+            raise ErrOptionalData(":ntp:Unable to add ACL, invalid instance: {0}".format(type(acl)))
     def _addHost(self,id,host):
         self.hosts={}
         if id not in self.hosts:

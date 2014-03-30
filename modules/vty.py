@@ -2,6 +2,7 @@ __author__ = 'David Vavra'
 
 from yapsy.IPlugin import IPlugin
 from pyrage.acl import ACLv4
+from pyrage.acl import ACLv6
 from pyrage.utils import isValidIP
 from pyrage.utils import ErrRequiredData
 import pyrage.utils
@@ -15,7 +16,7 @@ class VTY(IPlugin):
         self.gw = None
 
 
-    def _addProtocol(self,protocol,version=2,timeout=600,retries=3):
+    def _addProtocol(self,protocol,version=None,timeout=600,retries=3):
         self.protocols={}
         if protocol not in self.protocols:
             self.protocols[protocol] = {}
@@ -24,10 +25,10 @@ class VTY(IPlugin):
             self.protocols[protocol]['timeout'] = timeout
             self.protocols[protocol]['retries'] = retries
 
-    def _addAcl(self,aclId,aclInstance,ver):
-        if ver==4:
+    def _addAcl(self,aclInstance):
+        if isinstance(aclInstance,ACLv4):
             self.acl = aclInstance
-        elif ver==6:
+        elif isinstance(aclInstance,ACLv6):
             self.acl6=aclInstance
 
     def _addGateway(self,gateway):
@@ -70,12 +71,12 @@ class VTY(IPlugin):
             if contextToParse.find('acl_id') is not None:
                 aclId = contextToParse.find('acl_id').text
                 acl=acls.parseAcl(aclId,4)
-                self._addAcl(aclId,acl)
+                self._addAcl(acl)
 
             if contextToParse.find('acl6_id') is not None:
                 aclId = contextToParse.find('acl6_id').text
                 acl=acls.parseAcl(aclId,6)
-                self._addAcl(aclId,acl)
+                self._addAcl(acl)
 
             if contextToParse.find('vlan') is not None:
                 self._addVlan(contextToParse.find('vty_vlan').text)

@@ -46,18 +46,16 @@ def main():
             logger.log('error',dev+e.msg)
             raise SystemExit(1)
 
+
     """
      generate ncat rules for every device
     """
-    lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/mako'])
-    mkt=Template(open(inputArgs.rulesFile_template).read(),lookup=lookup,strict_undefined=True)
+    #lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/mako'])
+    mkt=Template(open(inputArgs.rulesFile_template).read())#,lookup=lookup,strict_undefined=True)
     for dev,instance in deviceInstances.items():
         f=open('{0}.rules'.format(dev),'w')
         f.write(mkt.render(
             device=instance,
-            bgp=True,
-            ospf=True,
-            hsrp=True,
             **instance.instances))
         f.close()
 

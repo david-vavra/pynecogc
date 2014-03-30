@@ -5,6 +5,7 @@ from yapsy.IPlugin import IPlugin
 from pyrage.utils import ErrRequiredData
 from pyrage.utils import ErrOptionalData
 
+import re
 
 
 class SNMP(IPlugin):
@@ -12,7 +13,7 @@ class SNMP(IPlugin):
         self.communities = None
         self.traps = None
         self.trap_hosts = None
-        self.acls = None
+        self.acls = {}
 
         self.views=None
         self.groups=None
@@ -33,8 +34,7 @@ class SNMP(IPlugin):
                 self.communities[id]['privilege'] = 'RW'
             else:
                 raise ErrRequiredData(":snmp:Unsupported community privilege given: '{}'".format(privilege))
-            if aclId is not None:
-                self.communities[id]['acl'] = self.acls[aclId]
+            self.communities[id]['aclId'] = aclId
 
         else:
             if not len(id):
@@ -48,6 +48,8 @@ class SNMP(IPlugin):
         Category is given as a trap attribute.
     """
     def addTrap(self,trap,tags):
+        if self.traps is None:
+            self.traps={}
         for tag in tags:
             if tag not in self.traps:
                 self.traps[tag] = []
@@ -56,6 +58,8 @@ class SNMP(IPlugin):
 
 
     def addTrapHost(self,id,auth,version,host,tags,authLevel=None):
+        if self.trap_hosts is None:
+            self.trap_hosts={}
         if version not in ['1','2c','3']:
             raise ErrRequiredData(":snmp:Invalid snmp version given within trap id '{0}': '{1}'".format(id,version))
         self.trap_hosts[id] = {}
@@ -66,6 +70,8 @@ class SNMP(IPlugin):
         self.trap_hosts[id]['authLevel']=authLevel
 
     def addView(self,viewName,tree,op):
+        if self.views is None:
+            self.views={}
         if op.lower() not in ['included','excluded']:
             raise ErrRequiredData(":snmp:Invalid snmp view tree type specified, should be one of [included,excluded]: {0}".format(op))
         if viewName not in self.views:
@@ -73,16 +79,18 @@ class SNMP(IPlugin):
                                   'excluded':[]}
         self.views[viewName][op.lower()].append(tree)
 
-    def addGroup(self,name,secModel,aclId,authLevel=None):
+    def addGroup(self,name,version,aclId,secLevel=None):
+        if self.groups is None:
+            self.groups={}
         if name not in self.groups:
-            if secModel.lower() not in ['1','2c','3']:
+            if version not in [3]:
                 raise ErrRequiredData(":snmp:Invalid group ('{0}') security model specified: '{1}'".format(name,secModel))
-            if secModel=='3' and authLevel.lower() not in ['noauth','auth','priv']:
+            if version=='3' and secLevel.lower() not in ['noauth','auth','priv']:
                 raise ErrOptionalData(":snmp:Invalid group ('{0}') authentication level specified: '{1}'".format(name,authLevel))
-            group={'secModel':secModel,
-                   'authLevel':authLevel,
+            group={'version':version,
+                   'secLevel':secLevel,
                    'aclId':aclId,
-                   'views':{'read':[],'write':[]}
+                   'views':{'read':None,'write':None}
                    }
             self.groups[name]=group
 
@@ -91,17 +99,19 @@ class SNMP(IPlugin):
             raise ErrRequiredData(":snmp:Invalid view ('{0}') privilege specified: {'1'}".format(viewName,viewPrivilege))
         if groupName not in self.groups:
             raise ErrRequiredData(":snmp:Can't assign view with nonexisting group: '{0}'".format(groupName))
-        self.groups[groupName]['views'][viewPrivilege].append(viewName)
+        self.groups[groupName]['views'][viewPrivilege]=viewName
 
     def addUser(self,userName,group,version,aclId):
-        if version.lower() not in ['1','2c','3']:
+        if self.users is None:
+            self.users={}
+        if version.lower() not in ['3']:
             raise ErrRequiredData(":snmp:Invalid user ('{0}') snmp version specified: '{1}'".format(userName,version))
         if group not in self.groups:
             raise ErrRequiredData(":snmp:Can't assign user '{1}' with nonexisting group: '{0}'".format(group,userName))
         self.users[userName]={
             'group':group,
             'version':version,
-            'acl':self.acls[aclId],
+            'aclId':aclId,
             'auth':None,
             'priv':None
         }
@@ -131,9 +141,13 @@ class SNMP(IPlugin):
     def parseContext(self,context,acls):
         for snmp in context.iter('snmp'):
             for community in snmp.iter('community'):
-                aclId = community.attrib['acl_id']
-                if aclId not in self.acls:
+                aclId = community.attrib['acl_id'] if 'acl_id' in community.attrib else None
+                if aclId not in self.acls and aclId is not None:
                     self.acls[aclId]=acls.parseAcl(aclId,4)
+                if 'acl6_id' in community.attrib:
+                    aclId = community.attrib['acl6_id']
+                    if aclId is not None and aclId not in self.acls:
+                        self.acls[aclId]=acls.parseAcl(aclId,6)
                 self.addCommunity(community.attrib['id'],
                                          community.text,
                                          community.attrib['privilege'],
@@ -166,14 +180,21 @@ class SNMP(IPlugin):
                         tree.text,
                         tree.attrib['type'])
 
-            for group in snmp.iter('group'):
-                 self.addGroup(
+            for group in snmp.iter('groupv3'):
+                aclId = group.attrib['acl_id'] if 'acl_id' in group.attrib else None
+                if aclId is not None and aclId not in self.acls:
+                    self.acls[aclId]=acls.parseAcl(aclId,4)
+                if 'acl6_id' in group.attrib:
+                    aclId = group.attrib['acl6_id']
+                    if aclId is not None and aclId not in self.acls:
+                        self.acls[aclId]=acls.parseAcl(aclId,6)
+                self.addGroup(
                      name=group.attrib['id'],
-                     secModel=group.attrib['secModel'],
-                     aclId=group.attrib['acl'],
-                     authLevel=group.attrib['authLevel'] if group.attrib['secModel']=='3' else None
+                     version=3,
+                     aclId=aclId,
+                     secLevel=group.attrib['secLevel']
                  )
-                 for view in group.iter('_view'):
+                for view in group.iter('_view'):
                      self.addViewIntoGroup(
                         groupName=group.attrib['id'],
                         viewName=view.text,
@@ -182,13 +203,18 @@ class SNMP(IPlugin):
 
             for user in snmp.iter('user'):
                 if user.attrib['version']=='3':
-                    if user.attrib['acl'] not in self.acls:
-                       self.acls[user.attrib['acl']]=acls.parseAcl(user.attrib['acl'],4)
+                    aclId = user.attrib['acl_id'] if 'acl_id' in user.attrib else None
+                    if aclId is not None and aclId not in self.acls:
+                        self.acls[aclId]=acls.parseAcl(aclId,4)
+                    if 'acl6_id' in user.attrib:
+                        aclId = user.attrib['acl6_id']
+                        if aclId is not None and aclId not in self.acls:
+                            self.acls[aclId]=acls.parseAcl(aclId,6)
                     self.addUser(
                         userName=user.find('username').text,
                         version='3',
                         group=user.attrib['group'],
-                        aclId=user.attrib['acl']
+                        aclId=aclId
                     )
                     auth=user.find('auth')
                     if len(auth)>0:

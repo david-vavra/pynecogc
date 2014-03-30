@@ -111,7 +111,7 @@ class Device():
         self.l3=False
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig()
 instances={}
 pluginManager = PluginManager()
 pluginManager.setPluginPlaces([PLUGIN_PATH])
