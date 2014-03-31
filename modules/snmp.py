@@ -57,7 +57,7 @@ class SNMP(IPlugin):
                 self.traps[tag].append(trap)
 
 
-    def addTrapHost(self,id,auth,version,host,tags,authLevel=None):
+    def addTrapHost(self,id,auth,version,host,tags,secLevel=None):
         if self.trap_hosts is None:
             self.trap_hosts={}
         if version not in ['1','2c','3']:
@@ -67,7 +67,7 @@ class SNMP(IPlugin):
         self.trap_hosts[id]['auth'] = auth
         self.trap_hosts[id]['tags'] = tags
         self.trap_hosts[id]['version']=version
-        self.trap_hosts[id]['authLevel']=authLevel
+        self.trap_hosts[id]['secLevel']=secLevel
 
     def addView(self,viewName,tree,op):
         if self.views is None:
@@ -167,7 +167,7 @@ class SNMP(IPlugin):
                 self.addTrapHost(
                     id=trap_host.attrib['id'],
                     auth=trap_host.attrib['user'],
-                    version=3,
+                    version='3',
                     host=trap_host.text,
                     secLevel=trap_host.attrib['secLevel'],
                     tags=trap_host.attrib['tags'].split(','),
@@ -218,7 +218,6 @@ class SNMP(IPlugin):
                         self.acls[aclId]=acls.parseAcl(aclId,6)
                 self.addUser(
                     userName=user.find('username').text,
-                    version='3',
                     group=user.attrib['group'],
                     aclId=aclId
                 )

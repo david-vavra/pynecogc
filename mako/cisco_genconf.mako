@@ -49,7 +49,7 @@ def printAcl(acl):
     output=""
 
     if acl is None:
-        return "! Unable to print acl\\\n"
+        return "! Unable to print acl\n"
 
  
     # choose the acl name
@@ -61,24 +61,24 @@ def printAcl(acl):
     elif len(acl.name)>0:
         name=acl.name
     else:
-        return "! Unable to print acl\\\n"
+        return "! Unable to print acl\n"
 
     #get the acl type
     if 'cisco' in acl.type:
         if acl.type['cisco'] not in ['standard','extended']:
-            return "! Unable to print acl: {0}\\\n".format(name)
+            return "! Unable to print acl: {0}\n".format(name)
         else:
             aclType = acl.type['cisco']
     else:
         if 'generic' not in acl.type:
-            return "! Unable to print acl: {0}\\\n".format(name)
+            return "! Unable to print acl: {0}\n".format(name)
         elif acl.type['generic'] not in validAclTypes:
-            return "! Unable to print acl: {0}\\\n".format(name)
+            return "! Unable to print acl: {0}\n".format(name)
         else:
             aclType = acl.type['generic']
 
     if len(aclType)==0:
-        return "! Unable to print acl: {0}\\\n".format(str(acl.name))
+        return "! Unable to print acl: {0}\n".format(str(acl.name))
 
     if aclType == 'standard':
         # standard
@@ -91,7 +91,7 @@ def printAcl(acl):
     
     # build the acl
     if not isNumberedAcl:
-        output += 'ip access-list {aclType} {name}\\\n'.format(
+        output += 'ip access-list {aclType} {name}\n'.format(
         	aclType=aclType.lower(), 
         	name=name)
         lineSyntax=' '+lineSyntax
@@ -107,15 +107,15 @@ def printAcl(acl):
             # change their seq if neccessary
             if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
                 if int(lineNum)+1 in acl.rules:
-                    return "! Unable to print acl: {0}\\\n".format(name)
+                    return "! Unable to print acl: {0}\n".format(name)
                 else:
                     lineArgs['seq'] = lineNum+1
 
             # the comment itself
             if isNumberedAcl:
-                output += 'access-list {0} '.format(name) + lineComment % rule + '\\\n'
+                output += 'access-list {0} '.format(name) + lineComment % rule + '\n'
             else:
-                output += lineNum + ' ' + lineComment % comment + '\\\n'
+                output += lineNum + ' ' + lineComment % comment + '\n'
 
 
         lineArgs = defaultdict(str,rule)
@@ -136,14 +136,21 @@ def printAcl(acl):
         if aclType != 'standard':
             lineArgs['destination_mask'] = "" if not lineArgs['source_mask'] else buildNetMask(lineArgs['destination_mask'])
         if isNumberedAcl:
-            output += 'access-list {0} '.format(name) + (lineSyntax % lineArgs).strip() + '\\\n'
+            output += 'access-list {0} '.format(name) + (lineSyntax % lineArgs).strip() + '\n'
         else:
-            output += (lineSyntax % lineArgs).rstrip() + '\\\n'
-
-    output=output.replace('deny','deny  ')
-    output=output.replace('0.0.0.0 255.255.255.255','any')
+            output += (lineSyntax % lineArgs).rstrip() + '\n'
     
-    return output.strip()
+    output=output.replace('0.0.0.0 255.255.255.255','any')
+    output=re.sub(r'[ ]+',' ',output).strip()
+    output=output.splitlines()
+    output_mod=[]
+    for line in output:
+    	if line.find('remark') != -1:
+    		output_mod.append(line)
+    	else:
+    		output_mod.append(line.replace('deny','deny  '))
+        
+    return '\n'.join(output_mod)
 
 def getAclName(acl):
 	if acl is None: 
@@ -160,24 +167,24 @@ def printAAAServers(aaa):
 	if aaa.groups is not None:
 		for groupName in aaa.groups:
 			group = aaa.groups[groupName]
-			aaaServers += "aaa group server {0} {1}\\\n".format(
+			aaaServers += "aaa group server {0} {1}\n".format(
 				group['type'],
 				groupName
 				)
 			
 			for hostName in group['hosts']:
-				aaaServers += " server name {0}\\\n".format(hostName)
+				aaaServers += " server name {0}\n".format(hostName)
 
 	""" print hosts """
 	if aaa.hosts is not None:
 		for hostName in aaa.hosts:
 			host = aaa.hosts[hostName]
 			if 'ip' in host:
-				aaaServers += "{0} server {1}\\\n".format(
+				aaaServers += "{0} server {1}\n".format(
 					host['type'],
 					hostName
 				)
-				aaaServers += " address ipv4 {0}\\\n".format(
+				aaaServers += " address ipv4 {0}\n".format(
 					host['ip']
 				)
 
@@ -187,7 +194,7 @@ def printAAAServers_old(aaa):
 	output=""
 	if aaa.hosts is not None:
 		for host in aaa.hosts:
-			output+="{1}-server host {0}.*\\\n".format(
+			output+="{1}-server host {0}.*\n".format(
 				aaa.hosts[host]['ip'],
 				aaa.hosts[host]['type'].lower())
 	return output.strip()
@@ -200,7 +207,7 @@ def printAAAMethodsLists(aaa):
 			for method in aaa.methodsLists[line]['methods']:
 				methods+=method+' '
 			methods=methods.strip()
-			aaa_methodsLists+="aaa authentication {lineType} {name} {methods}\\\n".format(
+			aaa_methodsLists+="aaa authentication {lineType} {name} {methods}\n".format(
 					lineType=aaa.methodsLists[line]['type']['cisco'],
 					name=line,
 					methods=methods.replace('+','\+') # because of eventual tacacs+
@@ -282,7 +289,7 @@ def printTrapServers(snmp):
 		res+="snmp-server host {host} traps version {version} {v3Params} {auth} {traps}\n".format(
 			host=trapServer['host'],
 			version=trapServer['version'],
-			v3Params= trapServer['authLevel'] if trapServer['authLevel'] is not None else '',
+			v3Params= trapServer['secLevel'] if trapServer['secLevel'] is not None else '',
 			auth=trapServer['auth'],
 			traps=traps
 		)

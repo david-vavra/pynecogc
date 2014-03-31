@@ -56,6 +56,8 @@
 		<severity>error</severity>
 	</syslog>
 	<urpf mode="strict"></urpf>
+    </group>
+    <group id="SRV">
 	<vtp>
 		<domain>SRV</domain>
 		<mode>client</mode>
@@ -68,9 +70,9 @@
 		<protocol>telnet</protocol>
 		<vlan>50</vlan>
 	</vty>
-</group>
+    </group>
 <!-- DEVICES -->
-<device groups="GLOBAL,SRV">
+<device groups="DEFAULT,SRV">
 	<fqdn>sw.example.com</fqdn>
 	<snmp>
 		<community version="2c" id="monitor" privilege="read-only">monkom</community>
