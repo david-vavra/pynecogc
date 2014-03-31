@@ -25,7 +25,7 @@ def main():
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device',nargs='+')
     #inputArgs=argParser.parse_args(sys.argv[1:])
-    inputArgs=argParser.parse_args("-t mako/cisco_genconf.mako -n xml/network-example.xml sw14.mgmt.ics.muni.cz".split(' '))
+    inputArgs=argParser.parse_args("-t mako/cisco_genconf.mako -n xml/devices-example.xml sw14.mgmt.ics.muni.cz".split(' '))
 
     logger = Logger('warning')
 

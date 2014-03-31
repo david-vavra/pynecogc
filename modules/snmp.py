@@ -101,16 +101,13 @@ class SNMP(IPlugin):
             raise ErrRequiredData(":snmp:Can't assign view with nonexisting group: '{0}'".format(groupName))
         self.groups[groupName]['views'][viewPrivilege]=viewName
 
-    def addUser(self,userName,group,version,aclId):
+    def addUser(self,userName,group,aclId):
         if self.users is None:
             self.users={}
-        if version.lower() not in ['3']:
-            raise ErrRequiredData(":snmp:Invalid user ('{0}') snmp version specified: '{1}'".format(userName,version))
         if group not in self.groups:
             raise ErrRequiredData(":snmp:Can't assign user '{1}' with nonexisting group: '{0}'".format(group,userName))
         self.users[userName]={
             'group':group,
-            'version':version,
             'aclId':aclId,
             'auth':None,
             'priv':None
@@ -159,14 +156,24 @@ class SNMP(IPlugin):
                 ver=trap_host.attrib['version']
                 self.addTrapHost(
                     id=trap_host.attrib['id'],
-                    auth=trap_host.attrib[
-                        'user' if ver=='3' else 'community'
-                    ],
+                    auth=trap_host.attrib['community'],
                     version=ver,
                     host=trap_host.text,
                     tags=trap_host.attrib['tags'].split(','),
-                    authLevel=trap_host.attrib['authLevel'] if ver=='3' else None
                 )
+
+            for trap_host in snmp.iter('trap_host_v3'):
+
+                self.addTrapHost(
+                    id=trap_host.attrib['id'],
+                    auth=trap_host.attrib['user'],
+                    version=3,
+                    host=trap_host.text,
+                    secLevel=trap_host.attrib['secLevel'],
+                    tags=trap_host.attrib['tags'].split(','),
+                )
+
+            #authLevel=trap_host.attrib['authLevel'] if ver=='3' else
 
             for trap in snmp.iter('trap'):
                 self.addTrap(trap.text,trap.attrib['tags'].split(','))
@@ -202,33 +209,32 @@ class SNMP(IPlugin):
                      )
 
             for user in snmp.iter('user'):
-                if user.attrib['version']=='3':
-                    aclId = user.attrib['acl_id'] if 'acl_id' in user.attrib else None
+                aclId = user.attrib['acl_id'] if 'acl_id' in user.attrib else None
+                if aclId is not None and aclId not in self.acls:
+                    self.acls[aclId]=acls.parseAcl(aclId,4)
+                if 'acl6_id' in user.attrib:
+                    aclId = user.attrib['acl6_id']
                     if aclId is not None and aclId not in self.acls:
-                        self.acls[aclId]=acls.parseAcl(aclId,4)
-                    if 'acl6_id' in user.attrib:
-                        aclId = user.attrib['acl6_id']
-                        if aclId is not None and aclId not in self.acls:
-                            self.acls[aclId]=acls.parseAcl(aclId,6)
-                    self.addUser(
+                        self.acls[aclId]=acls.parseAcl(aclId,6)
+                self.addUser(
+                    userName=user.find('username').text,
+                    version='3',
+                    group=user.attrib['group'],
+                    aclId=aclId
+                )
+                auth=user.find('auth')
+                if len(auth)>0:
+                    self.changeUserAuth(
                         userName=user.find('username').text,
-                        version='3',
-                        group=user.attrib['group'],
-                        aclId=aclId
+                        authType=auth.attrib['type'],
+                        encrypted=False if 'encrypted' not in auth.attrib or auth.attrib['encrypted'].lower()=='false' else True,
+                        authString=auth.text)
+                priv=user.find('priv')
+                #def changeUserPriv(self,userName,privType,encrypted,privString)
+                if len(priv)>0:
+                    self.changeUserPriv(
+                        userName=user.find('username').text,
+                        privType=auth.attrib['type'],
+                        encrypted=False if 'encrypted' not in auth.attrib or auth.attrib['encrypted'].lower()=='false' else True,
+                        privString=auth.text
                     )
-                    auth=user.find('auth')
-                    if len(auth)>0:
-                        self.changeUserAuth(
-                            userName=user.find('username').text,
-                            authType=auth.attrib['type'],
-                            encrypted=False if 'encrypted' not in auth.attrib or auth.attrib['encrypted'].lower()=='false' else True,
-                            authString=auth.text)
-                    priv=user.find('priv')
-                    #def changeUserPriv(self,userName,privType,encrypted,privString)
-                    if len(priv)>0:
-                        self.changeUserPriv(
-                            userName=user.find('username').text,
-                            privType=auth.attrib['type'],
-                            encrypted=False if 'encrypted' not in auth.attrib or auth.attrib['encrypted'].lower()=='false' else True,
-                            privString=auth.text
-                        )
