@@ -17,7 +17,8 @@ class VTY(IPlugin):
 
 
     def _addProtocol(self,protocol,version=None,timeout=600,retries=3):
-        self.protocols={}
+        if self.protocols is None:
+            self.protocols={}
         if protocol not in self.protocols:
             self.protocols[protocol] = {}
             if version is not None:
@@ -54,7 +55,7 @@ class VTY(IPlugin):
 
         for vty in contextToParse.iter('vty'):
             # Parse desired transport protocol and its parameters.
-            protocol = contextToParse.find('protocol')
+            protocol = vty.find('protocol')
             if protocol is not None:
                 if protocol.text == 'ssh':
                     sshParams={}
@@ -68,13 +69,13 @@ class VTY(IPlugin):
                 else:
                     self._addProtocol(protocol.text)
             # Parse id of acl used to limit access to device's vty
-            if contextToParse.find('acl_id') is not None:
-                aclId = contextToParse.find('acl_id').text
+            if vty.find('acl_id') is not None:
+                aclId = vty.find('acl_id').text
                 acl=acls.parseAcl(aclId,4)
                 self._addAcl(acl)
 
-            if contextToParse.find('acl6_id') is not None:
-                aclId = contextToParse.find('acl6_id').text
+            if vty.find('acl6_id') is not None:
+                aclId = vty.find('acl6_id').text
                 acl=acls.parseAcl(aclId,6)
                 self._addAcl(acl)
 

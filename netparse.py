@@ -2,6 +2,8 @@ __author__ = 'David Vavra'
 
 import xml.etree.ElementTree as xmlet
 from pyrage.acl import ACL
+from pyrage.utils import ErrRequiredData
+from pyrage.utils import ErrOptionalData
 from yapsy.PluginManager import PluginManager
 import copy
 
@@ -24,8 +26,6 @@ class NetworkParser():
          within the context of methods called by parseDevice method.
         """
         self.currentlyParsedDevice=None
-
-        self.ERR_DEVICE_NOT_FOUND = 1
 
         try:
             self.network = xmlet.parse(definitionsFile)
@@ -54,9 +54,8 @@ class NetworkParser():
                 deviceDef = device
                 break
         if deviceDef is None:
-            self.logger.log('warning',"Device '{dev}' not found in xml file.".format(dev=dev.fqdn))
+            self.logger.log('error',"Device '{dev}' not found in xml file.".format(dev=dev.fqdn))
             self.parsedDevices[dev.fqdn] = None
-            return self.ERR_DEVICE_NOT_FOUND
 
         
         if deviceDef.find('vendor') is not None:
@@ -72,13 +71,12 @@ class NetworkParser():
         """ todo, possibly add ipv4 tag into devices.xml """
         dev.ip4=True
 
-        
         dev.groups=deviceDef.attrib['groups'].split(',') if 'groups' in deviceDef.attrib else []
 
         for member in dev.groups:
-            for dev.groups in self.network.iter('group'):
-                if dev.groups.attrib['id'] == member:
-                    self._parseContext(dev.groups,deviceInstances)
+            for group in self.network.iter('group'):
+                if group.attrib['id'] == member:
+                    self._parseContext(group,deviceInstances)
 
         """ parse the particular device's parameters """
         self._parseContext(deviceDef,deviceInstances)
@@ -95,13 +93,20 @@ class NetworkParser():
             MEMBER_GROUP (in as-in-file order) < DEVICE
         """
         for name,instance in instances.items():
-            instance.parseContext(context,self.acls)
+            try:
+                instance.parseContext(context,self.acls)
+            except ErrOptionalData as e:
+                self.logger.log('warning',self.currentlyParsedDevice.fqdn++str(e))
+            except ErrRequiredData as e:
+                self.logger.log('error',self.currentlyParsedDevice.fqdn+str(e))
+
         return
 
 class Device():
     def __init__(self,deviceName):
         self.instances = copy.deepcopy(instances)
 
+        self.groups=[]
         self.fqdn = deviceName
         self.vendor = ""
         self.type = ""

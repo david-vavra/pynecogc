@@ -516,13 +516,13 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
  no ip arp inspection trust
 % else:
-ConfigRuleName:3.4.2 Forbid any Arp trusted ports
+ConfigRuleName:3.4.2 Forbid any Arp inspection trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
-ConfigRuleInstance:.* 
+ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip arp inspection trust</code>
+ConfigRuleMatch:<code>^ ip arp inspection trust$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid any ports to be configured as \
 Arp inspection trusted ports
@@ -580,7 +580,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:AccessPort
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(makeListOfVlanRange(ipSourceGuard.vlanRange))}
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip verify source$</code>
+ConfigRuleMatch:<code>^ ip verify source$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid IP source guard to be configured on other interfaces 
 ConfigRuleSelected:Yes
@@ -593,7 +593,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:AccessPort
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip verify source$</code>
+ConfigRuleMatch:<code>^ ip verify source$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid IP source guard to be enabled on any interface 
 ConfigRuleSelected:Yes
@@ -1162,7 +1162,7 @@ ConfigRuleParentName:1.3.1 Tacacs
 
 
 % for methodList in aaa_methodsLists:
-ConfigRuleName:1.3.2.1.${loop.index+1} Method list n. ${loop.index+1}, ${aaa_methodsListsTypes[loop.index]}
+ConfigRuleName:1.3.2.1.${loop.index+1} AAA method list n. ${loop.index+1}, ${aaa_methodsListsTypes[loop.index]}
 ConfigRuleParentName:1.3.1.1 AAA Methods lists
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
