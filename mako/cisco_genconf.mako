@@ -210,7 +210,7 @@ def printAAAMethodsLists(aaa):
 			aaa_methodsLists+="aaa authentication {lineType} {name} {methods}\n".format(
 					lineType=aaa.methodsLists[line]['type']['cisco'],
 					name=line,
-					methods=methods.replace('+','\+') # because of eventual tacacs+
+					methods=methods
 					)
 				
 	return aaa_methodsLists.strip()
@@ -526,18 +526,13 @@ ip name-server ${' '.join(dns.hosts.values())}
 ! 			AAA 
 aaa new-model
 % if aaa is not None:
-! aaa servers
 ${printAAAServers(aaa)}
-! aaa methods lists
-${printAAAMethodsLists(aaa)}
-! enable secret fallback 
-enable secret 5 ! FIX 
-! Console authentication 
+${printAAAMethodsLists(aaa)} 
+enable secret 5 ! FIX  
 line con 0
  password ! FIX  
  login authentication ! FIX
  stopbits 1
-! vty fallback password 
 line vty 0 15 
  password ! FIX 
 % endif 

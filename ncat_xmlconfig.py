@@ -43,6 +43,8 @@ def main():
         try:
             parser.parseDevice(deviceInstances[dev])
         except InvalidData as e:
+            """ remove incorrectly parsed device """
+            #deviceInstances.pop(dev)
             logger.log('error',dev+e.msg)
             raise SystemExit(1)
 
@@ -51,7 +53,11 @@ def main():
      generate ncat rules for every device
     """
     #lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/mako'])
-    mkt=Template(open(inputArgs.rulesFile_template).read())#,lookup=lookup,strict_undefined=True)
+    try:
+        mkt=Template(open(inputArgs.rulesFile_template).read())#,lookup=lookup,strict_undefined=True)
+    except IOError as e:
+        logger.log('critical', 'Unable to open template file! {0}'.format(str(e)))
+        raise SystemExit(2)
     for dev,instance in deviceInstances.items():
         f=open('{0}.rules'.format(dev),'w')
         f.write(mkt.render(

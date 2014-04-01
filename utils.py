@@ -46,7 +46,8 @@ def validateVlanRange(vlanRangeToValidate):
     except ValueError:
         isSingleVlan = False
 
-    if isSingleVlan: return vlanRange.append(vlanRangeToValidate)
+    if isSingleVlan:
+        return True
 
     for commaSepVlan in vlanRangeToValidate.split(','):
 

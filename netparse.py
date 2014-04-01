@@ -19,14 +19,13 @@ class NetworkParser():
         self.logger = logger
         self.deviceDef  = None
 
-
-
         """
          instance of currently parsed device, so it's attributes could be accessed
          within the context of methods called by parseDevice method.
         """
         self.currentlyParsedDevice=None
 
+        """ load file with devices,groups,acls"""
         try:
             self.network = xmlet.parse(definitionsFile)
         except IOError as e:
@@ -41,7 +40,19 @@ class NetworkParser():
                     f=definitionsFile,err=e.msg)
             )
             raise SystemExit(1)
-        self.acls = ACL(self.network)
+
+        self.devicesXml={}
+        for devices in self.network.iter('devices'):
+            self.devicesXml=devices
+        self.groupsXml={}
+        for groups in self.network.iter('groups'):
+            self.groupsXml=groups
+        self.aclsXml={}
+        for acls in self.network.iter('acls'):
+            self.aclsXml=acls
+
+        """ Initialize container for acls"""
+        self.acls = ACL(self.aclsXml)
 
     def parseDevice(self,dev):
 
@@ -49,13 +60,15 @@ class NetworkParser():
 
         deviceInstances = dev.instances
         deviceDef=None
-        for device in self.network.iter('device'):
+
+        for device in self.devicesXml.iter('device'):
             if device.find('fqdn').text == dev.fqdn:
                 deviceDef = device
                 break
         if deviceDef is None:
             self.logger.log('error',"Device '{dev}' not found in xml file.".format(dev=dev.fqdn))
             self.parsedDevices[dev.fqdn] = None
+            return
 
         
         if deviceDef.find('vendor') is not None:
@@ -74,7 +87,8 @@ class NetworkParser():
         dev.groups=deviceDef.attrib['groups'].split(',') if 'groups' in deviceDef.attrib else []
 
         for member in dev.groups:
-            for group in self.network.iter('group'):
+
+            for group in self.groupsXml.iter('group'):
                 if group.attrib['id'] == member:
                     self._parseContext(group,deviceInstances)
 
