@@ -43,7 +43,7 @@ class VTY(IPlugin):
 
     def _addVlan(self,vlan):
         try:
-            if int(vlan) >= pyrage.utils.VLAN_MIN and int(vlan) <= pyrage.amber.VLAN_MAX:
+            if int(vlan) >= pyrage.utils.VLAN_MIN and int(vlan) <= pyrage.utils.VLAN_MAX:
                 self.vlan = vlan
         except ValueError as e:
             raise ErrRequiredData(
@@ -79,9 +79,9 @@ class VTY(IPlugin):
                 acl=acls.parseAcl(aclId,6)
                 self._addAcl(acl)
 
-            if contextToParse.find('vlan') is not None:
-                self._addVlan(contextToParse.find('vty_vlan').text)
+            if vty.find('vlan') is not None:
+                self._addVlan(vty.find('vlan').text)
 
-            if contextToParse.find('gw') is not None:
-                self._addGateway(contextToParse.find('gw').text)
+            if vty.find('gw') is not None:
+                self._addGateway(vty.find('gw').text)
 

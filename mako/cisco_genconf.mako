@@ -217,28 +217,30 @@ def printAAAMethodsLists(aaa):
 				
 """ SNMP """ 
 def printSnmpCommunities(snmp):
-	if snmp.communities is None:
+	if snmp is None or snmp.communities is None:
 		return ""
-	for id,com in snmp.communities.items():
+	res=""
+	for comId,com in snmp.communities.items():		
 		if com['version'] == '1' or com['version'] == '2' or com['version'] == '2c':
 			community = com['community']
 		else:
-			return ERR_INVALID_VERSION
+			return "ERR_INVALID_SNMP_COM_VERSION"
 		if com['privilege'].lower() in ['read-only','ro']:
 			priv = 'RO'
 		elif com['privilege'].lower() in ['read-write','rw']:
 			priv = 'RW'
 		else:
-			return ERR_INVALID_PRIV
+			return "ERR_INVALID_SNMP_COM_PRIV"
 		if com['aclId'] is not None:
 			aclName = getAclName(snmp.acls[com['aclId']])
 		else:
 			aclName = ""
-	return ("snmp-server community %s %s %s" % (
+		res+=("snmp-server community %s %s %s" % (
 			community,
 			priv,
 			aclName
-		)).strip()	
+		)).strip()+'\n'
+	return res
 
 import re
 from pyrage.acl import ACLv4
@@ -380,6 +382,8 @@ def printSNMPAcls(snmp):
 	return res	
 %>
 ! --------------------------
+! 			STP  
+! --------------------------
 ! 			NTP  
 % if ntp is not None and ntp.hosts is not None:
 ! ntp servers 
@@ -398,21 +402,37 @@ ${printAcl(ntp.acl)}
 % endif
 ! --------------------------
 ! 			VTY
+<%
+fqdnSplit=device.fqdn.split('.',1)
+domain=None
+if len(fqdnSplit)>1:	
+	domain=fqdnSplit[1]
+host=fqdnSplit[0]
+%>
+% if domain is not None:
+ip domain-name ${domain}
+% endif 
+hostname ${host}
 % if vty is not None:
 	% if device.l2 == True:
 interface Vlan1
 shutdown
+end
+conf t
 !
-		% if vty.vlan is not None:
-interface Vlan ${vty.vlan}
-!
-		% endif
 		% if vty.gw is not None:
 ip default-gateway ${vty.gw}
 !
 		% endif 
 	% endif 	
-vty 0 15 
+	% if vty.vlan is not None:
+interface Vlan ${vty.vlan}
+! TODO IP
+end
+conf t
+!
+	% endif
+line vty 0 15 
 	% if vty.acl is not None:
  access-class ${getAclName(vty.acl)} in	
 	% endif
@@ -423,18 +443,18 @@ vty 0 15
  transport input ${" ".join(vty.protocols.keys())}
  end
 conf t
-		% if 'ssh' in vty.protocols:
-crypto key generate rsa 2048
+	% else:
+ transport input none
+ end conf t
+ 	% endif
+ 	% if 'ssh' in vty.protocols:
+crypto key generate modulus 2048
 		% if 'version' in vty.protocols['ssh']:
 ip ssh version ${vty.protocols['ssh']['version']}
 		% endif
 ip ssh timeout ${vty.protocols['ssh']['timeout']}
 ip ssh authentication-retries ${vty.protocols['ssh']['retries']}
-		% endif
-	% else:
- transport input none
- 	% endif
- exit
+	% endif
 !
 	% if vty.acl is not None:
 ${printAcl(vty.acl)}
@@ -527,7 +547,8 @@ ip name-server ${' '.join(dns.hosts.values())}
 aaa new-model
 % if aaa is not None:
 ${printAAAServers(aaa)}
-${printAAAMethodsLists(aaa)} 
+${printAAAMethodsLists(aaa)}
+aaa session-id common
 enable secret 5 ! FIX  
 line con 0
  password ! FIX  
