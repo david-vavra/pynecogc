@@ -6,15 +6,15 @@ from mako.template import Template
 
 """
 Config;rule;PassFail;Importance;Instance;Line
-sw14.mgmt.ics.muni.cz;3.1 - Forbid IP source-route;FAIL;5;;2
-sw14.mgmt.ics.muni.cz;3.2 Forbid IP directed broadcast;PASS;5;;
-sw14.mgmt.ics.muni.cz;3.3.1 Require DHCP snooping enabled for specified vlans;FAIL;10;;2
-sw14.mgmt.ics.muni.cz;3.3.2 Forbid any dhcp snooping trusted ports;FAIL;10;FastEthernet0/18;258
-sw14.mgmt.ics.muni.cz;3.3.2 Forbid any dhcp snooping trusted ports;FAIL;10;GigabitEthernet0/1;425
-sw14.mgmt.ics.muni.cz;3.4.1 Require arp inspection enabled;PASS;10;;
-sw14.mgmt.ics.muni.cz;3.4.2 Forbid any Arp inspection trusted ports;FAIL;10;GigabitEthernet0/1;422
-sw14.mgmt.ics.muni.cz;3.6.1 Forbid IP source guard to be enabled on any interface;PASS;10;;
-sw14.mgmt.ics.muni.cz;3.7 Limit number of MAC addresses on an interface;FAIL;10;FastEthernet0/3;156
+host;3.1 - Forbid IP source-route;FAIL;5;;2
+host;3.2 Forbid IP directed broadcast;PASS;5;;
+host;3.3.1 Require DHCP snooping enabled for specified vlans;FAIL;10;;2
+host;3.3.2 Forbid any dhcp snooping trusted ports;FAIL;10;FastEthernet0/18;258
+host;3.3.2 Forbid any dhcp snooping trusted ports;FAIL;10;GigabitEthernet0/1;425
+host;3.4.1 Require arp inspection enabled;PASS;10;;
+host;3.4.2 Forbid any Arp inspection trusted ports;FAIL;10;GigabitEthernet0/1;422
+host;3.6.1 Forbid IP source guard to be enabled on any interface;PASS;10;;
+host;3.7 Limit number of MAC addresses on an interface;FAIL;10;FastEthernet0/3;156
 
 """
 
