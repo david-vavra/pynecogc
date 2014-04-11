@@ -238,6 +238,7 @@ def getAclName(acl):
 
 <%!
 def printAAAServers(aaa):
+	# add (.*\n)* or split the definition 
 	aaaServers=""
 	""" print groups """
 	for groupName in aaa.groups:
@@ -609,7 +610,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(switchport port-security maximum (\d+)$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(no switchport)|(switchport mode trunk)|(switchport port-security maximum (\d+)$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit number of MAC addresses on an interface 
 ConfigRuleSelected:Yes
@@ -622,12 +623,25 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(no switchport)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 switchport port-security maximum 1
+
+ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
+ConfigRuleParentName:3. Data plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSHwInterface
+ConfigRuleInstance:.*
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>(?!^interface \S+\n$).+</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid non-shutdown interface in default configuration
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+shutdown
 
 
 #}}}
@@ -829,7 +843,7 @@ ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
+ConfigRuleMatch:<code>((?!^interface \S+\n$).+)|(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
 )*^!$))|((switchport mode access\
 )|(.+\
 )*|^ no cdp run$)</code>
@@ -839,32 +853,19 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE\
 no cdp run
 
-% if device.l3 and device.l2:
+% if device.l2:
 ConfigRuleName:2.7 Forbid DTP trunk negotiation  
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^ shutdown)|(^ no switchport)|(switchport mode (access|trunk))</code>
+ConfigRuleMatch:<code>(^ shutdown)|((no)* ip address.*)|(switchport mode (access|trunk))</code>
 #ConfigRuleMatch:<code>(^ switchport\n(?!((.+\n)* switchport mode (access|trunk))))</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid DTP trunk negotiation  
 ConfigRuleSelected:Yes
-
-% elif device.l2:
-ConfigRuleName:2.7 Forbid DTP trunk negotiation  
-ConfigRuleParentName:2. Control plane
-ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
-ConfigRuleInstance:.*
-ConfigRuleType:Required
-ConfigRuleMatch:<code>(switchport mode (access|trunk))|(^ shutdown$)</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Forbid DTP trunk negotiation  
-ConfigRuleSelected:Yes
-% endif
-
+% endif 
 # Spanning tree
 % if device.l2:
 ConfigClassName:2.8 STP 
@@ -878,7 +879,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(spanning-tree portfast$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(spanning-tree portfast$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require STP portfast feature to be configured on access ports   
 ConfigRuleSelected:Yes
@@ -891,7 +892,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(^ shutdown$)|(no switchport)|(switchport mode trunk)|(spanning-tree bpduguard enable$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(no switchport)|(switchport mode trunk)|(spanning-tree bpduguard enable$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require STP BPDU guard feature to be configured on access ports   
 ConfigRuleSelected:Yes

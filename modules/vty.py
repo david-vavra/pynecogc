@@ -60,11 +60,11 @@ class VTY(IPlugin):
                 if protocol.text == 'ssh':
                     sshParams={}
                     if 'version' in protocol.attrib:
-                        version = protocol.attrib['version']
+                        sshParams['version'] = protocol.attrib['version']
                     if 'timeout' in protocol.attrib:
-                        timeout = protocol.attrib['timeout']
+                        sshParams['timeout'] = protocol.attrib['timeout']
                     if 'retries' in protocol.attrib:
-                        retries = protocol.attrib['retries']
+                        sshParams['retries'] = protocol.attrib['retries']
                     self._addProtocol(protocol.text,**sshParams)
                 else:
                     self._addProtocol(protocol.text)

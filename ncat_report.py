@@ -18,6 +18,12 @@ sw14.mgmt.ics.muni.cz;3.7 Limit number of MAC addresses on an interface;FAIL;10;
 
 """
 
+FQDN_POS=0
+RULE_POS=1
+RESULT_POS=2
+IMPORTANCE_POS=3
+INSTANCE_POS=4
+LINENUM_POS=5
 
 def main():
     """
@@ -36,29 +42,63 @@ def main():
     """
     try:
         mkt=Template(open(inputArgs.template).read())#,lookup=lookup,strict_undefined=True)
-    except IOError as e:
+    except IOError as e :
         sys.stderr.write('Error! Unable to open template file! {0}\n'.format(str(e)))
 
     """ try to open ncat outputs and build html pages from them """
-    for dev in inputArgs.device_audit_result:
-        try:
-            with open(dev,'r') as f:
+
+    devices={}
+    try:
+        for devFile in inputArgs.device_audit_result:
+            with open(devFile,'r') as f:
                 lines=f.readlines()
                 """ Example: #AuditDate=Mon Mar 31 02:05:28 2014 GMT """
                 date=lines[-1].split('=')[1]
-                name=dev.replace('ncat_out.txt','')
-                """ lines with actual results """
-                lines=map(lambda f:f.split(';'),lines[1:-1])
-                print(lines)
-                with open(name+'.html','w') as output:
-                    output.write(mkt.render(
-                        date=date,
-                        name=name,
-                        lines=lines
-                    ))
 
-        except IOError:
-            sys.stderr.write('Error! {0}\n'.format(str(e)))
+                """ lines with the actual results """
+                lines=map(lambda f:f.strip().split(';'),lines[1:-1])
+                for line in lines:
+                    name=line[FQDN_POS]
+                    if name not in devices:
+                        devices[name]=DeviceAuditResults(name)
+                    devices[name].addRuleResult(line)
+
+                for name,dev in devices.items():
+                    with open(name+'.html','w') as output:
+                        print(str(dev.failed))
+                        output.write(mkt.render(
+                            date=date,
+                            name=name,
+                            deviceResults=dev
+                        ))
+    except IOError as e:
+        sys.stderr.write('Error! {0}\n'.format(str(e)))
+
+class DeviceAuditResults():
+    def __init__(self,fqdn):
+        self.fqdn=fqdn
+        # importance : rule : instance , linenum
+        self.failed={}
+        self.passed={}
+
+    def addRuleResult(self,res):
+        print(res)
+        """ we expect the list of len 6, which should be the result of line.split(';')"""
+        assert len(res)==6
+        assert res[RESULT_POS] in ['FAIL','PASS']
+
+
+        if res[RESULT_POS]=='FAIL':
+            container=self.failed
+        else:
+            container=self.passed
+        if res[IMPORTANCE_POS] not in container:
+            container[res[IMPORTANCE_POS]]={}
+        container=container[res[IMPORTANCE_POS]]
+        if res[RULE_POS] not in container:
+            container[res[RULE_POS]]={}
+        container=container[res[RULE_POS]]
+        container[res[INSTANCE_POS]]=res[LINENUM_POS]
 
 
 if __name__=="__main__":

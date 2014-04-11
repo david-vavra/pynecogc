@@ -187,6 +187,7 @@ def printAAAServers(aaa):
 				aaaServers += " address ipv4 {0}\n".format(
 					host['ip']
 				)
+				aaaServers+="! FIXME ADD KEY\n"
 
 	return aaaServers.strip()
 	
@@ -378,9 +379,42 @@ def printSNMPAcls(snmp):
 		return ""
 	res=""
 	for i,acl in snmp.acls.items():
-		res+=printAcl(acl)
-	return res	
+		res+=printAcl(acl)+'\n'
+	return res.strip()
+"""	
+ciscoRanges={
+	re(r'WS-C2960.48.+'):"Fa 0/1-48"
+}
+"""
 %>
+! --------------------------
+! 			TEMPLATES
+macro name desktop
+# macro keywords $vlan $des
+switchport access vlan $vlan
+switchport mode access
+switchport port-security
+switchport port-security maximum 1
+switchport port-security violation restrict
+switchport port-security aging time 2
+switchport port-security aging type inactivity
+storm-control broadcast level 20
+no cdp enable
+load-interval 30
+spanning-tree portfast
+spanning-tree bpduguard enable
+no macro description
+macro description desktop
+description $des
+no shutdown
+@
+! --------------------------
+!		ERRDISABLE
+errdisable recovery cause all
+errdisable recovery interval 30
+! --------------------------
+! 	 SHUTDOWN ALL INTS
+! TODO
 ! --------------------------
 ! 			STP  
 ! --------------------------
@@ -402,6 +436,9 @@ ${printAcl(ntp.acl)}
 % endif
 ! --------------------------
 ! 			VTY
+no ip domain-lookup
+no ip http server
+no ip http secure-server
 <%
 fqdnSplit=device.fqdn.split('.',1)
 domain=None
@@ -448,12 +485,12 @@ conf t
  end conf t
  	% endif
  	% if 'ssh' in vty.protocols:
-crypto key generate modulus 2048
+crypto key generate rsa modulus 2048
 		% if 'version' in vty.protocols['ssh']:
 ip ssh version ${vty.protocols['ssh']['version']}
 		% endif
-ip ssh timeout ${vty.protocols['ssh']['timeout']}
-ip ssh authentication-retries ${vty.protocols['ssh']['retries']}
+! ip ssh time-out ${vty.protocols['ssh']['timeout']}
+! ip ssh authentication-retries ${vty.protocols['ssh']['retries']}
 	% endif
 !
 	% if vty.acl is not None:
@@ -477,9 +514,14 @@ logging facility ${syslog.facility}
 	% if syslog.severity is not None:
 logging trap ${syslog.severity}
 	% endif
+no logging console
+service timestamps debug datetime msec localtime
+service timestamps log datetime msec localtime
 % endif
 ! --------------------------
-! 			VTP 
+! 			VTP
+! default, and to reset the revision number in case of further vtp setting 
+vtp mode transparent
 % if vtp is not None:
 	% if vtp.version is not None:
 vtp version ${vtp.version}
@@ -544,19 +586,19 @@ ip name-server ${' '.join(dns.hosts.values())}
 % endif
 ! --------------------------
 ! 			AAA 
+service password-encryption
 aaa new-model
 % if aaa is not None:
-${printAAAServers(aaa)}
-${printAAAMethodsLists(aaa)}
-aaa session-id common
 enable secret 5 ! FIX  
 line con 0
  password ! FIX  
  login authentication ! FIX
- stopbits 1
 line vty 0 15 
  password ! FIX 
 % endif 
+${printAAAServers(aaa)}
+${printAAAMethodsLists(aaa)}
+aaa session-id common
 ! --------------------------
 ! 			SNMP
 % if snmp is not None:
