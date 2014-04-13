@@ -1,7 +1,0 @@
-[Core]
-Name = vtp
-Module = vtp
-
-[Documentation]
-Author = David Vavra
-Version = 0.1

@@ -1,7 +1,0 @@
-[Core]
-Name = vty
-Module = vty
-
-[Documentation]
-Author = David Vavra
-Version = 0.1
