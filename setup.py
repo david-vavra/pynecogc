@@ -24,10 +24,6 @@ setup(name='Pyrage',
                 ],
       data_files=[('/usr/local/etc/pyrage/mako/', ['pyrage/mako/cisco_genconf.mako',
                                                    'pyrage/mako/cisco_ncat.mako']),
-                  """
-                  ('/usr/local/etc/pyrage/xml/', ['pyrage/xml/devices.xsd',
-                                                  'pyrage/xml/devices-example.xml']),
-                  """
                   ('/usr/local/bin/',['ncat_xmlconfig',
                                       'pyge'])
                   ]
