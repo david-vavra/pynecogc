@@ -1,0 +1,45 @@
+Config;rule;PassFail;Importance;Instance;Line
+cps-srv.bb10.muni.cz;3.1 - Forbid IP source-route;PASS;5;;
+cps-srv.bb10.muni.cz;3.2 Forbid IP directed broadcast;PASS;5;;
+cps-srv.bb10.muni.cz;3.3.1 Require DHCP snooping enabled for specified vlans;FAIL;10;;2
+cps-srv.bb10.muni.cz;3.3.2 Forbid any dhcp snooping trusted ports;PASS;10;;
+cps-srv.bb10.muni.cz;3.4.1 Forbid arp inspection to be enabled for any vlan;PASS;10;;
+cps-srv.bb10.muni.cz;3.4.2 Forbid any Arp inspection trusted ports;PASS;10;;
+cps-srv.bb10.muni.cz;3.7 Limit number of MAC addresses on an interface;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;3.7 Limit number of MAC addresses on an interface;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;3.7 Limit number of MAC addresses on an interface;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;3.8 Limit amount of broadcast traffic on an interface;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;3.8 Limit amount of broadcast traffic on an interface;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;3.8 Limit amount of broadcast traffic on an interface;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.1.1 NTP servers;PASS;10;;
+cps-srv.bb10.muni.cz;2.1.2 NTP ACL;FAIL;10;;2
+cps-srv.bb10.muni.cz;2.1.3 NTP ACL applied;PASS;10;;
+cps-srv.bb10.muni.cz;2.2.1 Syslog logging;PASS;10;;
+cps-srv.bb10.muni.cz;2.6 Forbid CDP to run on endhost interfaces;PASS;10;;
+cps-srv.bb10.muni.cz;2.7 Forbid DTP trunk negotiation;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.7 Forbid DTP trunk negotiation;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.7 Forbid DTP trunk negotiation;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.8.1 Require STP portfast;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.8.1 Require STP portfast;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.8.1 Require STP portfast;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.8.2 Require STP BPDU guard;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.8.2 Require STP BPDU guard;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;2.8.2 Require STP BPDU guard;FAIL;10;GigabitEthernet2/5;374
+cps-srv.bb10.muni.cz;1.1.1.1 VTY allowed input transport;PASS;10;;
+cps-srv.bb10.muni.cz;1.1.1.2 Require VTY ACL for Ipv4 applied;PASS;10;;
+cps-srv.bb10.muni.cz;1.1.1.3 Require VTY ACL for Ipv4 defined;FAIL;10;;2
+cps-srv.bb10.muni.cz;1.1.2 - Forbid Auxiliary Port;PASS;10;;
+cps-srv.bb10.muni.cz;1.1.3 Forbid IP HTTP Server;PASS;10;;
+cps-srv.bb10.muni.cz;1.1.4 Forbid IP HTTP Secure Server;PASS;10;;
+cps-srv.bb10.muni.cz;1.2.1 Configure the Host Name;PASS;10;;
+cps-srv.bb10.muni.cz;1.2.2 Configure the Domain Name;PASS;7;;
+cps-srv.bb10.muni.cz;1.2.4 - Require SSH Timeout value defined;FAIL;7;;2
+cps-srv.bb10.muni.cz;1.2.6 - Require SSH version 2;FAIL;7;;2
+cps-srv.bb10.muni.cz;1.3.1.1 AAA hosts and groups definition in a new format;FAIL;10;;2
+cps-srv.bb10.muni.cz;1.3.2.1.1 AAA method list n. 1, enable;PASS;10;;
+cps-srv.bb10.muni.cz;1.3.2.1.2 AAA method list n. 2, login;PASS;10;;
+cps-srv.bb10.muni.cz;1.3.2.1.3 AAA method list n. 3, login;FAIL;10;;2
+cps-srv.bb10.muni.cz;1.4.1.1 SNMP community;FAIL;10;;2
+cps-srv.bb10.muni.cz;1.4.1.2 SNMP community;FAIL;10;;2
+cps-srv.bb10.muni.cz;1.4.3.1 Forbid RO communities to defined also as RW;PASS;10;;
+#AuditDate=Mon Apr  7 11:09:12 2014 GMT
