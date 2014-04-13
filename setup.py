@@ -9,7 +9,7 @@ This script performs the installation of Pyrage. Core modules, altogether with e
 mako templates, xml network definition and fundamental modules.
 '''
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='Pyrage',
       version='0.1',
@@ -22,6 +22,7 @@ setup(name='Pyrage',
       packages=['pyrage',
                 'pyrage.modules',
                 ],
+      package_data={'pyrage.modules':['*.yapsy-plugin']},
       data_files=[('/usr/local/etc/pyrage/mako/', ['pyrage/mako/cisco_genconf.mako',
                                                    'pyrage/mako/cisco_ncat.mako']),
                   ('/usr/local/bin/',['ncat_xmlconfig',
