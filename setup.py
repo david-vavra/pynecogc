@@ -20,12 +20,11 @@ setup(name='Pyrage',
       platforms=['GNU/Linux'],
       license='GNU',
       packages=['pyrage',
-                'pyrage.modules',
+                'pyrage.modules'
                 ],
       package_data={'pyrage.modules':['*.yapsy-plugin']},
       data_files=[('/usr/local/etc/pyrage/mako/', ['pyrage/mako/cisco_genconf.mako',
                                                    'pyrage/mako/cisco_ncat.mako']),
-                  ('/usr/local/bin/',['ncat_xmlconfig',
-                                      'pyge'])
+                    ('/usr/local/bin/', ['ncat_xmlconfig','pyge'])
                   ]
      )

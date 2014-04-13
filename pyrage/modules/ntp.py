@@ -3,7 +3,7 @@ __author__ = 'David Vavra'
 from yapsy.IPlugin import IPlugin
 from pyrage.acl import ACLv4
 from pyrage.acl import ACLv6
-from utils import ErrOptionalData
+from pyrage.utils import ErrOptionalData
 
 
 class NTP(IPlugin):

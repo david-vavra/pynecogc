@@ -9,9 +9,7 @@ import copy
 
 from yapsy import logging
 
-
-PLUGIN_PATH='/usr/local/lib/python3.3/dist-packages/pyrage/modules/'
-PLUGIN_PATH='/usr/local/lib/python3.3/dist-packages/pyrage/modules/'
+import os
 
 class NetworkParser():
 
@@ -130,6 +128,9 @@ class Device():
         self.l2=False
         self.l3=False
 
+
+PLUGIN_PATH=os.path.dirname(os.path.realpath(__file__)).split('/')
+PLUGIN_PATH='/'.join(PLUGIN_PATH[:-1])+'/pyrage/modules'
 
 logging.basicConfig()
 instances={}

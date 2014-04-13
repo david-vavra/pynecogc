@@ -484,7 +484,7 @@ conf t
  transport input none
  end conf t
  	% endif
- 	% if 'ssh' in vty.protocols:
+ 	% if vty.protocols is not None and 'ssh' in vty.protocols:
 crypto key generate rsa modulus 2048
 		% if 'version' in vty.protocols['ssh']:
 ip ssh version ${vty.protocols['ssh']['version']}
