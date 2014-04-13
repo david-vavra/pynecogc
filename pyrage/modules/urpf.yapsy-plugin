@@ -1,0 +1,7 @@
+[Core]
+Name = urpf
+Module = urpf
+
+[Documentation]
+Author = David Vavra
+Version = 0.1

@@ -1,0 +1,7 @@
+[Core]
+Name = dns
+Module = dns
+
+[Documentation]
+Author = David Vavra
+Version = 0.1

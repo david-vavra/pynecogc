@@ -1,0 +1,7 @@
+[Core]
+Name = syslog
+Module = syslog
+
+[Documentation]
+Author = David Vavra
+Version = 0.1
