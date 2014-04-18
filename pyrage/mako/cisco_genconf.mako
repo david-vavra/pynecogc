@@ -388,7 +388,7 @@ ciscoRanges={
 """
 %>
 ! --------------------------
-! 			TEMPLATES
+! 	TEMPLATES
 macro name desktop
 # macro keywords $vlan $des
 switchport access vlan $vlan
@@ -409,16 +409,16 @@ description $des
 no shutdown
 @
 ! --------------------------
-!		ERRDISABLE
+!	ERRDISABLE
 errdisable recovery cause all
 errdisable recovery interval 30
 ! --------------------------
-! 	 SHUTDOWN ALL INTS
+	SHUTDOWN ALL INTS
 ! TODO
 ! --------------------------
-! 			STP  
+!	STP  
 ! --------------------------
-! 			NTP  
+! 	NTP  
 % if ntp is not None and ntp.hosts is not None:
 ! ntp servers 
 	% for i,host in ntp.hosts.items():
@@ -435,7 +435,7 @@ ${printAcl(ntp.acl)}
 	% endif 
 % endif
 ! --------------------------
-! 			VTY
+!	VTY
 no ip domain-lookup
 no ip http server
 no ip http secure-server
@@ -501,7 +501,7 @@ ${printAcl(vty.acl6)}
 	% endif
 % endif
 ! --------------------------
-! 			SYSLOG
+!	SYSLOG
 % if syslog is not None:
 	% if syslog.hosts is not None:
 		% for i,host in syslog.hosts.items():
@@ -519,7 +519,7 @@ service timestamps debug datetime msec localtime
 service timestamps log datetime msec localtime
 % endif
 ! --------------------------
-! 			VTP
+!	VTP
 ! default, and to reset the revision number in case of further vtp setting 
 vtp mode transparent
 % if vtp is not None:
@@ -534,7 +534,7 @@ vtp domain ${vtp.domain}
 	% endif 	
 % endif
 ! --------------------------
-! 		DHCP SNOOPING
+!	DHCP SNOOPING
 % if dhcpSnooping is not None:
 	% if dhcpSnooping.trustedPorts is not None:
 		% for port in dhcpSnooping.trustedPorts:
@@ -549,7 +549,7 @@ ip dhcp snooping vlan ${dhcpSnooping.vlanRange}
 	% endif 
 % endif
 ! --------------------------
-! 		ARP INSPECTION
+!	ARP INSPECTION
 % if arpInspection is not None:
 	% if arpInspection.trustedPorts is not None:
 		% for port in arpInspection.trustedPorts:
@@ -564,28 +564,28 @@ ip arp inspection vlan ${arpInspection.vlanRange}
 	% endif 
 % endif 
 ! --------------------------
-!		IP SOURCE GUARD
+!	IP SOURCE GUARD
 % if ipSourceGuard is not None and ipSourceGuard.vlanRange is not None: 
 ! 
 ! VLAN RANGE ${ipSourceGuard.vlanRange}
 !
 % endif
 ! --------------------------
-! 			DNS
+!	DNS
 % if dns is not None and dns.hosts is not None:
 ip name-server ${' '.join(dns.hosts.values())}
 % endif
 
 % if device.l3:
 ! --------------------------
-! 			uRPF
+!	uRPF
 % if urpf is not None and urpf.mode is not None:
 ! SET URPF MODE ${urpf.mode} ON L3 INTERFACES !
 ! ip verify unicast source reachable-via ${'rx' if urpf.mode.lower()=='strict' else 'any'}
 % endif 
 % endif
 ! --------------------------
-! 			AAA 
+!	AAA 
 service password-encryption
 aaa new-model
 % if aaa is not None:
