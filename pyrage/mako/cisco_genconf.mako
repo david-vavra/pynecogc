@@ -448,8 +448,18 @@ host=fqdnSplit[0]
 %>
 % if domain is not None:
 ip domain-name ${domain}
+banner motd ~
+ -- ${host}.${domain} --
+~
+% else:
+banner motd ~
+ -- ${host} --
+~
 % endif 
 hostname ${host}
+banner motd ~
+ -- ${host}.${domain} --
+~
 % if vty is not None:
 	% if device.l2 == True:
 interface Vlan1
