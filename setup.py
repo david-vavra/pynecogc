@@ -13,8 +13,7 @@ from setuptools import setup
 
 setup(name='Pyrage',
       version='0.1',
-      description='Python network config assessor and generator.'
-      'that gathers information about physical inventory of networking hardware.',
+      description='Python network config assessor and generator.',
       author='David Vavra',
       author_email='vavra.david@email.cz',
       platforms=['GNU/Linux'],
