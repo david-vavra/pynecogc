@@ -1,16 +1,11 @@
 ## -*- coding: utf-8 -*-
-
 <%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
-
-# FUNCTIONS
 <%def name="makeRegexOfContextInstanceList(contextList)">\
 ${'('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+')'}\
 </%def>
-
 <%def name="makeNegRegexOfContextInstanceList(contextList)">\
 ${'(?!('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+').+)'}\
 </%def>
-
 <%!
 def makeListOfVlanRange(vlanRange):
     if not vlanRange:
@@ -120,9 +115,6 @@ def makeListOfVlanRange(vlanRange):
     vlanList.sort()
     return list(set(vlanList))       	
 %>
-
-#{{{
-#{{{
 <%!
 import re 
 
@@ -292,8 +284,6 @@ def getAclName(acl):
 	else: 
 		return acl.name    
 %>
-#}}}
-
 <%!
 def printAAAServers(aaa):
 	# add (.*\n)* or split the definition 
@@ -357,14 +347,7 @@ def printSnmpCommunity(comId,snmp):
 		priv,
 		aclName
 	)).strip()
-
-	
-	
 %>
-
-#}}}
-
-#{{{
 # Definition of classes 
 ConfigClassName:Selectable
 #ConfigClassQuestion:Apply some or all of the rules that are selectable
@@ -417,11 +400,8 @@ ConfigClassDescription:Data plane root class
 ConfigClassSelected:Yes
 ConfigClassParentName:ICS Level 2 
 
-#}}}
-
-
 ###################
-#{{{	Data plane
+	Data plane
 ###################
 
 ConfigRuleName:3.1 - Forbid IP source-route
@@ -437,8 +417,6 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip directed-broadcast</code>
-
-#{{{DHCP Snooping
 
 % if dhcpSnooping is not None:
 ConfigClassName:3.3 DHCP snooping 
@@ -514,9 +492,6 @@ ConfigRuleFix:interface INSTANCE${"\\"}
  no ip dhcp snooping trust
 % endif 
 % endif 
-#}}}
-
-#{{{ Arp inspection
 
 % if arpInspection is not None:
 ConfigClassName:3.4 Arp inspection 
@@ -591,9 +566,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
  no ip arp inspection trust
 % endif
 % endif 
-#}}}
 
-#{{{ URPF
 % if uRPF is not None and (device.l3 == True and uRPF.mode is not None):
 ConfigClassName:3.5 URPF
 ConfigClassDescription:URPF related rules
@@ -613,7 +586,6 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
  ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'}
 % endif
-#}}}
 
 % if ipSourceGuard is not None:
 ConfigClassName:3.6 IP source guard
@@ -701,11 +673,8 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 shutdown
 
-
-#}}}
-
 ###################
-#{{{ Control plane
+ Control plane
 ###################
 % if ntp is not None and ntp.hosts is not None:
 ConfigClassName:2.1 NTP 
@@ -1175,20 +1144,16 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 spanning-tree bpduguard enable
 % endif
-#}}}
 
 ###################
-#{{{Management plane
+Management plane
 ###################
-
-#{{{Remote access
 
 ConfigClassName:1.1 Access control rules
 ConfigClassDescription:Access control
 ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
 
-#{{{ VTY
 % if vty:
 ConfigClassName:1.1.1 Limit VTY remote access 
 ConfigClassDescription:Limit remote access methods
@@ -1276,8 +1241,6 @@ ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
 ConfigRuleFix:${printAcl(vty.acl6)}
 % endif 
-#}}}
-
 % endif 
 
 ConfigRuleName:1.1.2 - Forbid Auxiliary Port
@@ -1312,7 +1275,6 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Disable HTTPS server.
 ConfigRuleSelected:yes
 
-#{{{ SSH
 ConfigClassName:1.2 SSH
 ConfigClassDescription:Access control
 ConfigClassSelected:Yes
@@ -1378,9 +1340,7 @@ ConfigRuleMatch:<code>ip ssh version 2</code>
 ConfigRuleImportance:7
 ConfigRuleDescription:Verify the device is configured to limit the number of SSH authentication attempts.
 ConfigRuleSelected:yes
-#}}}
 
-#{{{ AAA, TACACS
 % if aaa:
 ConfigClassName:1.3 AAA
 ConfigClassDescription:AAA
@@ -1438,7 +1398,6 @@ ConfigClassDescription:AAA methods lists
 ConfigClassSelected:Yes
 ConfigRuleParentName:1.3.1 Tacacs
 
-
 % for methodList in aaa_methodsLists:
 ConfigRuleName:1.3.2.1.${loop.index+1} AAA method list n. ${loop.index+1}, ${aaa_methodsListsTypes[loop.index]}
 ConfigRuleParentName:1.3.1.1 AAA Methods lists
@@ -1457,7 +1416,6 @@ ConfigClassDescription:AAA method lists
 ConfigClassSelected:No
 ConfigRuleParentName:1.3.1 Tacacs
 % endif 
-
 % endif 
 
 % if snmp:
@@ -1511,7 +1469,6 @@ ConfigRuleDescription:Required acl for snmp community (Rule number 1.4.2.${loop.
 ConfigRuleSelected:Yes
 % endif
 % endif 
-
 % endfor
 
 ConfigClassName:1.4.3 RO communities
@@ -1537,6 +1494,3 @@ ConfigRuleDescription:Forbid RO communities to defined also as RW
 ConfigRuleSelected:Yes
 % endif
 % endif
-#}}}
-#}}}
-#}}}
