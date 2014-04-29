@@ -1,4 +1,5 @@
 <%!
+
 from collections import defaultdict 
 
 def buildNetMask(maskLen,wildcardFormat=True):
@@ -51,7 +52,6 @@ def printAcl(acl):
     if acl is None:
         return "! Unable to print acl\n"
 
- 
     # choose the acl name
     name=""
     isNumberedAcl=False
@@ -64,6 +64,7 @@ def printAcl(acl):
         return "! Unable to print acl\n"
 
     #get the acl type
+    aclType=""
     if 'cisco' in acl.type:
         if acl.type['cisco'] not in ['standard','extended']:
             return "! Unable to print acl: {0}\n".format(name)
@@ -78,7 +79,7 @@ def printAcl(acl):
             aclType = acl.type['generic']
 
     if len(aclType)==0:
-        return "! Unable to print acl: {0}\n".format(str(acl.name))
+        return "! Unable to print acl: {0}\n".format(name)
 
     if aclType == 'standard':
         # standard
@@ -87,7 +88,7 @@ def printAcl(acl):
         # extended acl
         lineSyntax = "%(action)s %(protocol)s %(source_ip)s %(source_mask)s %(source_port)s %(destination_ip)s %(destination_mask)s %(destination_port)s %(state)s %(log)s"
 
-    lineComment = "remark %(comment)s"
+    lineComment = "remark %s"
     
     # build the acl
     if not isNumberedAcl:
@@ -96,8 +97,8 @@ def printAcl(acl):
         	name=name)
         lineSyntax=' '+lineSyntax
 
-    for lineNum in sorted(acl.rules):
-        rule = acl.rules[lineNum]
+    for lineNum in sorted(acl.rules.keys()):
+    	rule=acl.rules[lineNum]
         # build rule lines
         if 'optional' in rule and rule['optional']:
         	continue
@@ -113,9 +114,11 @@ def printAcl(acl):
 
             # the comment itself
             if isNumberedAcl:
-                output += 'access-list {0} '.format(name) + lineComment % rule + '\n'
+                output += 'access-list {0} '.format(name) + lineComment % comment + '\n'
             else:
-                output += lineNum + ' ' + lineComment % comment + '\n'
+                """ we don't use seq in configurations """
+                """ output += str(lineNum) + ' ' + lineComment % comment + '\n' """
+                output += ' ' + lineComment % comment + '\n'
 
 
         lineArgs = defaultdict(str,rule)
@@ -151,6 +154,10 @@ def printAcl(acl):
     		output_mod.append(line.replace('deny','deny  '))
         
     return '\n'.join(output_mod)
+
+def printAcl6(acl):
+	""" TODO """
+	return "IPV6 ACLS PRINT YET NOT IMPLEMENTED"    
 
 def getAclName(acl):
 	if acl is None: 
@@ -424,15 +431,51 @@ errdisable recovery interval 30
 	% for i,host in ntp.hosts.items():
 ntp server ${host}
 	% endfor
-! ntp acl 
-	% if ntp.acl is not None:
-		% if 'cisco' not in ntp.acl.number:
-!	Unable to print ntp acl!
-		% else:
-ntp access-group peer ${ntp.acl.number['cisco']} 
-${printAcl(ntp.acl)}
+	% if ntp.acls is not None:
+! ntp acls	
+		% if ntp.acls['peer'] is not None:
+ntp access-group peer ${getAclName(ntp.acls['peer'])}			
 		% endif 
+		 % if ntp.acls['server'] is not None:
+ntp access-group serve ${getAclName(ntp.acls['server'])}			
+		% endif
+		% if ntp.acls['query'] is not None:
+ntp access-group query-only ${getAclName(ntp.acls['query'])}					
+		% endif 
+		% if ntp.acls['sync'] is not None:
+ntp access-group serve-only ${getAclName(ntp.acls['sync'])}					
+		% endif 				
+		% if ntp.acls['peer'] is not None:
+${printAcl(ntp.acls['peer'])}			
+		% endif 
+		 % if ntp.acls['server'] is not None:
+${printAcl(ntp.acls['server'])}			
+		% endif
+		% if ntp.acls['query'] is not None:
+${printAcl(ntp.acls['query'])}					
+		% endif 
+		% if ntp.acls['sync'] is not None:
+${printAcl(ntp.acls['sync'])}					
+		% endif 		
 	% endif 
+	% if device.ip6 and ntp.acls6 is not None:
+! ntp acls for ipv6
+		% if ntp.acls6['peer'] is not None:
+ntp access-group ipv6 peer ${getAclName(ntp.acls6['peer'])}				
+		% endif 
+		 % if ntp.acls6['server'] is not None:
+ntp access-group ipv6 serve ${getAclName(ntp)}			
+		% endif
+		% if ntp.acls6['query'] is not None:
+ntp access-group ipv6 query-only ${getAclName(ntp)}					
+		% endif 
+		% if ntp.acls6['sync'] is not None:
+ntp access-group ipv6 serve-only ${getAclName(ntp)}					
+		% endif 				
+		% for access in ntp.acls6:
+${printAcl6(ntp.acls6[access])}
+		% endfor  
+	% endif 	
 % endif
 ! --------------------------
 !	VTY
@@ -448,8 +491,18 @@ host=fqdnSplit[0]
 %>
 % if domain is not None:
 ip domain-name ${domain}
+banner motd ~
+ -- ${host}.${domain} --
+~
+% else:
+banner motd ~
+ -- ${host} --
+~
 % endif 
 hostname ${host}
+banner motd ~
+ -- ${host}.${domain} --
+~
 % if vty is not None:
 	% if device.l2 == True:
 interface Vlan1

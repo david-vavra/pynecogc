@@ -9,33 +9,57 @@ from pyrage.utils import ErrOptionalData
 class NTP(IPlugin):
     def __init__(self):
         self.hosts = None
-        self.acl = None
-        self.acl6 = None
-
-    def _addAcl(self,aclId,acl):
+        self.acls = {'peer':None,
+                     'server':None,
+                     'query':None,
+                     'sync':None
+        }
+        self.acls6 = {'peer':None,
+                     'server':None,
+                     'query':None,
+                     'sync':None
+        }
+    def _addAcl(self,aclId,acl,ntpAccess):
+        if ntpAccess not in ['peer','server','query','sync']:
+            raise ErrOptionalData(":ntp:Unable to add ACL, invalid access level specified: {0}".format(ntpAccess))
         if isinstance(acl,ACLv4):
-            self.acl = acl
+            self.acls[ntpAccess] = acl
         elif isinstance(acl,ACLv6):
-            self.acl6=acl
+            self.acls6[ntpAccess]=acl
         else:
-            raise ErrOptionalData(":ntp:Unable to add ACL, invalid instance: {0}".format(type(acl)))
+            raise ErrOptionalData(":ntp:Unable to add ACL ({1}), invalid instance: {0}".format(type(acl),aclId))
     def _addHost(self,id,host):
-        self.hosts={}
+        if self.hosts is None:
+            self.hosts = {}
         if id not in self.hosts:
             self.hosts[id] = host
 
     def parseContext(self,context,acls):
         contextToParse=context
         for ntp in context.iter('ntp'):
-            for acl in contextToParse.iter('acl_id'):
-                aclId=acl.text
-                acl=acls.parseAcl(aclId,4)
-                self._addAcl(aclId,acl)
+            for acl_id in ntp.iter('acl_id'):
+                aclId=acl_id.text
+                try:
+                    acl=acls.parseAcl(aclId,4)
+                except ErrOptionalData as e:
+                    e.message=':ntp'+e.message
+                    raise
+                ntpAccess=None
+                if 'access' in acl_id.attrib:
+                    ntpAccess=acl_id.attrib['access']
+                self._addAcl(aclId,acl,ntpAccess)
 
-            for acl in contextToParse.iter('acl6_id'):
-                aclId=acl.text
-                acl=acls.parseAcl(aclId,6)
-                self._addAcl(aclId,acl)
+            for acl_id in ntp.iter('acl6_id'):
+                aclId=acl_id.text
+                ntpAccess=None
+                if 'access' in acl_id.attrib:
+                    ntpAccess=acl_id.attrib['access']
+                try:
+                    acl=acls.parseAcl(aclId,6)
+                except ErrOptionalData as e:
+                    e.message=':ntp'+e.message
+                    raise
+                self._addAcl(aclId,acl,ntpAccess)
 
-            for ntpServer in contextToParse.iter('host'):
+            for ntpServer in ntp.iter('host'):
                 self._addHost(ntpServer.attrib['id'],ntpServer.text)
