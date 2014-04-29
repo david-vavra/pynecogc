@@ -46,12 +46,9 @@ class NetworkParser():
         self.groupsXml={}
         for groups in self.network.iter('groups'):
             self.groupsXml=groups
-        self.aclsXml={}
-        for acls in self.network.iter('acls'):
-            self.aclsXml=acls
 
         """ Initialize container for acls"""
-        self.acls = ACL(self.aclsXml)
+        self.acls = ACL(self.network)
 
     def parseDevice(self,dev):
 
@@ -109,9 +106,9 @@ class NetworkParser():
             try:
                 instance.parseContext(context,self.acls)
             except ErrOptionalData as e:
-                self.logger.log('warning',self.currentlyParsedDevice.fqdn++str(e))
+                self.logger.log('warning',self.currentlyParsedDevice.fqdn+e.message)
             except ErrRequiredData as e:
-                self.logger.log('error',self.currentlyParsedDevice.fqdn+str(e))
+                self.logger.log('error',self.currentlyParsedDevice.fqdn+e.message)
 
         return
 

@@ -46,7 +46,7 @@ def main():
         except InvalidData as e:
             """ remove incorrectly parsed device """
             #deviceInstances.pop(dev)
-            logger.log('error',dev+e.msg)
+            logger.log('error',dev+str(e))
             raise SystemExit(1)
 
 
@@ -71,7 +71,7 @@ def main():
 
     """
      launch ncat for every device
-    """
+
     ncatOutputFilesString=[]
     allRules=""
     for dev,instance in deviceInstances.items():
@@ -93,7 +93,7 @@ def main():
 
     except subprocess.CalledProcessError as e:
             raise SystemExit(e.returncode)
-
+    """
 
 if __name__=="__main__":
     main()
