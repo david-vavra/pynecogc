@@ -11,7 +11,9 @@ class Logger():
                             #"info":3,
                             #"debug":4
         }
-        self.chosenLogLevel = self.loggingSeverity[logLevel]
+        self.chosenLogLevel = self.loggingSeverity[logLevel] \
+            if logLevel in \
+               self.loggingSeverity else 0
 
     """
         Print given message on stderr output, if its severity is equal or less

@@ -14,9 +14,7 @@ import os
 class NetworkParser():
 
     def __init__(self,logger,definitionsFile):
-        self.parsedDevices = {}
         self.logger = logger
-        self.deviceDef  = None
 
         """
          instance of currently parsed device, so it's attributes could be accessed
@@ -63,7 +61,6 @@ class NetworkParser():
                 break
         if deviceDef is None:
             self.logger.log('error',"Device '{dev}' not found in xml file.".format(dev=dev.fqdn))
-            self.parsedDevices[dev.fqdn] = None
             return
 
         
