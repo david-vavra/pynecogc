@@ -8,7 +8,7 @@ ${'(?!('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+').+)'}\
 </%def>
 <%!
 def makeListOfVlanRange(vlanRange):
-[ ]{4}if not vlanRange:
+    if not vlanRange:
         return ['ERR']
     listOfRanges=vlanRange.split(',')
     vlanList=[]
