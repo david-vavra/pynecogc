@@ -120,9 +120,9 @@ import re
 
 def printAcl(acl,conf):
 	"""
-	acl : an ACL to be printed 
-	conf : denoted whether the printed ACL will be used as a regex to be matched 
-				or printed as a configuration proposal
+		acl : an ACL to be printed 
+		conf : denoted whether the printed ACL will be used as a regex to be matched 
+					or printed as a configuration proposal
 	"""
     validAclTypes = ['standard','extended']
     separator = "!"
@@ -232,9 +232,9 @@ def printAcl(acl,conf):
 
 def printAcl6(acl,conf):
 	"""
-	acl : an ACL to be printed 
-	conf : denoted whether the printed ACL will be used as a regex to be matched 
-				or printed as a configuration proposal
+		acl : an ACL to be printed 
+		conf : denoted whether the printed ACL will be used as a regex to be matched 
+					or printed as a configuration proposal
 	"""
     separator = "!"
     output=""
