@@ -95,8 +95,8 @@ def getRegexOfList(values):
     
     
 def makeListOfVlanRange(vlanRange):
-	#    if not validateVlanRange(vlanRange):
-	#       return ['ERR']
+    #    if not validateVlanRange(vlanRange):
+    #       return ['ERR']
     listOfRanges=vlanRange.split(',')
     vlanList=[]
     for r in listOfRanges:
