@@ -303,8 +303,7 @@ def getAclName(acl):
         return acl.number['cisco']
     else: 
         return acl.name    
-%>
-<%!
+
 def printAAAServers(aaa):
     # add (.*\n)* or split the definition 
     aaaServers=""
@@ -339,9 +338,7 @@ def printAAAServers_old(aaa):
             aaa.hosts[host]['ip'],
             aaa.hosts[host]['type'].lower())
     return re.sub(r'\\$','',output.strip())                
-%>
 
-<%!
 """ SNMP """ 
 def printSnmpCommunity(comId,snmp):
     com=snmp.communities[comId]
