@@ -1106,13 +1106,13 @@ ConfigRuleType:Required
 #ConfigRuleMatch:<code>((?!^interface \S+\n$).+)|(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
 #)*^!$))|((switchport mode access\
 #)|(.+\
-#)*|^ no cdp run$)</code>
+#)*|^ no cdp enable$)</code>
 % if device.l3:
 ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(interface \S+\
 (description.*)?\
-(?! switchport))|(^ no cdp run)</code>
+(?! switchport))|(^ no cdp enable)</code>
 % else:
-ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(^ no cdp run)</code>
+ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(^ no cdp enable)</code>
 % endif
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid CDP to run on endhost interfaces
