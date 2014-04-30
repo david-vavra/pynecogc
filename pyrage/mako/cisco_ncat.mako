@@ -182,8 +182,7 @@ def printAcl(acl,conf):
             continue
         if not conf:
             output+= '(.+remark.+\\\n)*'
-        else: 
-            if 'comment' in rule:
+        elif 'comment' in rule:
                 comment = rule['comment']
                 # insert the comment line between the rules,
                 # change their seq if neccessary
@@ -260,8 +259,7 @@ def printAcl6(acl,conf):
             continue
         if not conf:
             output+= '( remark.+\\\n)*' 
-        else:
-            if 'comment' in rule:
+        elif 'comment' in rule:            
             comment = rule['comment']
             # insert the comment line between the rules,
             # change their seq if neccessary
