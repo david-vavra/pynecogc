@@ -401,7 +401,7 @@ ConfigClassSelected:Yes
 ConfigClassParentName:ICS Level 2 
 
 ###################
-	Data plane
+#	Data plane
 ###################
 
 ConfigRuleName:3.1 - Forbid IP source-route
@@ -674,7 +674,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 shutdown
 
 ###################
- Control plane
+# Control plane
 ###################
 % if ntp is not None and ntp.hosts is not None:
 ConfigClassName:2.1 NTP 
@@ -1146,7 +1146,7 @@ spanning-tree bpduguard enable
 % endif
 
 ###################
-Management plane
+# Management plane
 ###################
 
 ConfigClassName:1.1 Access control rules
