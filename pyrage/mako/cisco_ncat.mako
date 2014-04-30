@@ -8,7 +8,7 @@ ${'(?!('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+').+)'}\
 </%def>
 <%!
 def makeListOfVlanRange(vlanRange):
-	if not vlanRange:
+[ ]{4}if not vlanRange:
         return ['ERR']
     listOfRanges=vlanRange.split(',')
     vlanList=[]
@@ -95,8 +95,8 @@ def getRegexOfList(values):
     
     
 def makeListOfVlanRange(vlanRange):
-	#    if not validateVlanRange(vlanRange):
-	#       return ['ERR']
+    #    if not validateVlanRange(vlanRange):
+    #       return ['ERR']
     listOfRanges=vlanRange.split(',')
     vlanList=[]
     for r in listOfRanges:
@@ -303,8 +303,7 @@ def getAclName(acl):
         return acl.number['cisco']
     else: 
         return acl.name    
-%>
-<%!
+
 def printAAAServers(aaa):
     # add (.*\n)* or split the definition 
     aaaServers=""
@@ -339,9 +338,7 @@ def printAAAServers_old(aaa):
             aaa.hosts[host]['ip'],
             aaa.hosts[host]['type'].lower())
     return re.sub(r'\\$','',output.strip())                
-%>
 
-<%!
 """ SNMP """ 
 def printSnmpCommunity(comId,snmp):
     com=snmp.communities[comId]
