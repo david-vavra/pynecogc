@@ -114,8 +114,7 @@ def makeListOfVlanRange(vlanRange):
                 return ['ERR']
     vlanList.sort()
     return list(set(vlanList))       	
-%>
-<%!
+
 import re 
 
 def printAcl(acl,conf):
