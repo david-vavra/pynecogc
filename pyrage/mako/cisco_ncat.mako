@@ -337,7 +337,7 @@ def printSnmpCommunity(comId,snmp):
 		return ERR_INVALID_PRIV
 	if 'aclId' in com:
 		if com['aclId'] in snmp.acls:
-			aclName = getAclName(snmp.acls['aclId'])
+			aclName = getAclName(snmp.acls[com['aclId']])
 		else:
 			aclName="ERR_ACL_FOR_COMMUNITY_NOT_DEFINED"
 	else:
