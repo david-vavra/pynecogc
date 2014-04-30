@@ -29,27 +29,27 @@ def makeListOfVlanRange(vlanRange):
     return list(set(vlanList))
 
 def fixContextConf(contextName,contextList,conf):
-	output=""
-	for context in contextList:
-		output+="{0} {1}\\\n".format(contextName,
-			context)
-		output+="{0}\\\n".format(conf)
-	return output
-	
+    output=""
+    for context in contextList:
+        output+="{0} {1}\\\n".format(contextName,
+            context)
+        output+="{0}\\\n".format(conf)
+    return output
+    
 def newline():
-	return '\\\n'
-	
+    return '\\\n'
+    
 from collections import defaultdict 
 
 def buildNetMask(maskLen,wildcardFormat=True):
         try:
             maskLen = int(maskLen)
         except ValueError:
-        	return "INVALID_MASK"
+            return "INVALID_MASK"
             #raise InvalidDataGiven("Invalid mask value given: '{0}'".format(
             #    maskLen),maskLen)
         if maskLen not in range(33):
-        	return "INVALID_MASK"
+            return "INVALID_MASK"
             #raise InvalidDataGiven("Invalid mask length given: '{0}'".format(
             #   maskLen),maskLen)
 
@@ -113,16 +113,16 @@ def makeListOfVlanRange(vlanRange):
             except ValueError:
                 return ['ERR']
     vlanList.sort()
-    return list(set(vlanList))       	
+    return list(set(vlanList))           
 
 import re 
 
 def printAcl(acl,conf):
-	"""
-		acl : an ACL to be printed 
-		conf : denoted whether the printed ACL will be used as a regex to be matched 
-					or printed as a configuration proposal
-	"""
+    """
+        acl : an ACL to be printed 
+        conf : denoted whether the printed ACL will be used as a regex to be matched 
+                    or printed as a configuration proposal
+    """
     validAclTypes = ['standard','extended']
     separator = "!"
     output=""
@@ -135,8 +135,8 @@ def printAcl(acl,conf):
     name=""
     isNumberedAcl=False
     if 'cisco' in acl.number:
-    	name=acl.number['cisco']
-    	isNumberedAcl=True
+        name=acl.number['cisco']
+        isNumberedAcl=True
     elif len(acl.name)>0:
         name=acl.name
     else:
@@ -171,47 +171,47 @@ def printAcl(acl,conf):
     # build the acl
     if not isNumberedAcl:
         output += 'ip access-list {aclType} {name}\\\n'.format(
-        	aclType=aclType.lower(), 
-        	name=name)
+            aclType=aclType.lower(), 
+            name=name)
         lineSyntax=' '+lineSyntax
 
     for lineNum in sorted(acl.rules.keys()):
         rule = acl.rules[lineNum]
         # build rule lines
         if 'optional' in rule and rule['optional']:
-        	continue
+            continue
         if not conf:
-        	output+= '(.+remark.+\\\n)*'
+            output+= '(.+remark.+\\\n)*'
         else: 
-			if 'comment' in rule:
-				comment = rule['comment']
-				# insert the comment line between the rules,
-				# change their seq if neccessary
-				if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
-					if int(lineNum)+1 in acl.rules:
-						return "! Unable to print acl: {0}\\\n".format(name)
-					else:
-						lineArgs['seq'] = int(lineNum)+1
-	
-				# the comment itself
-				if isNumberedAcl:
-					output += 'access-list {0} '.format(name) + lineComment % comment + '\\\n'
-				else:
-					output += ' ' + lineComment % comment + '\\\n'
+            if 'comment' in rule:
+                comment = rule['comment']
+                # insert the comment line between the rules,
+                # change their seq if neccessary
+                if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
+                    if int(lineNum)+1 in acl.rules:
+                        return "! Unable to print acl: {0}\\\n".format(name)
+                    else:
+                        lineArgs['seq'] = int(lineNum)+1
+    
+                # the comment itself
+                if isNumberedAcl:
+                    output += 'access-list {0} '.format(name) + lineComment % comment + '\\\n'
+                else:
+                    output += ' ' + lineComment % comment + '\\\n'
 
         lineArgs = defaultdict(str,rule)
         lineArgs['seq'] = lineNum
 
         # build wildcard masks from bit-length repr.
         if lineArgs['source_mask']=='32':
-        	lineArgs['source_mask']=''
-        	if aclType == 'standard':
-        		lineArgs['source_ip']='(host )?'+lineArgs['source_ip']
-        	else:
-        		lineArgs['source_ip']='host '+lineArgs['source_ip']
+            lineArgs['source_mask']=''
+            if aclType == 'standard':
+                lineArgs['source_ip']='(host )?'+lineArgs['source_ip']
+            else:
+                lineArgs['source_ip']='host '+lineArgs['source_ip']
         if lineArgs['destination_mask']=='32':
-        	lineArgs['destination_mask']=''
-        	lineArgs['destination_ip']='host '+lineArgs['destination_ip']
+            lineArgs['destination_mask']=''
+            lineArgs['destination_ip']='host '+lineArgs['destination_ip']
         lineArgs['source_mask'] = "" if  len(lineArgs['source_mask'])==0 else buildNetMask(lineArgs['source_mask'])
         # build a proper source/dest port def.syntax
         lineArgs['source_port']=('eq '+lineArgs['source_port']) if len(lineArgs['source_port']) else lineArgs['source_port']
@@ -230,11 +230,11 @@ def printAcl(acl,conf):
     return re.sub(r'\\$','',output.strip())
 
 def printAcl6(acl,conf):
-	"""
-		acl : an ACL to be printed 
-		conf : denoted whether the printed ACL will be used as a regex to be matched 
-					or printed as a configuration proposal
-	"""
+    """
+        acl : an ACL to be printed 
+        conf : denoted whether the printed ACL will be used as a regex to be matched 
+                    or printed as a configuration proposal
+    """
     separator = "!"
     output=""
 
@@ -257,33 +257,33 @@ def printAcl6(acl,conf):
         rule = acl.rules[lineNum]
         # build rule lines
         if 'optional' in rule and rule['optional']:
-        	continue
+            continue
         if not conf:
-        	output+= '( remark.+\\\n)*' 
+            output+= '( remark.+\\\n)*' 
         else:
-			if 'comment' in rule:
-			comment = rule['comment']
-			# insert the comment line between the rules,
-			# change their seq if neccessary
-			if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
-				if int(lineNum)+1 in acl.rules:
-					return "! Unable to print acl: {0}\\\n".format(name)
-					lineArgs['seq'] = int(lineNum)+1
+            if 'comment' in rule:
+            comment = rule['comment']
+            # insert the comment line between the rules,
+            # change their seq if neccessary
+            if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
+                if int(lineNum)+1 in acl.rules:
+                    return "! Unable to print acl: {0}\\\n".format(name)
+                    lineArgs['seq'] = int(lineNum)+1
 
-			# the comment itself
-			output += ' ' + lineComment % comment + '\\\n'
-        	
+            # the comment itself
+            output += ' ' + lineComment % comment + '\\\n'
+            
         
         lineArgs = defaultdict(str,rule)
         lineArgs['seq'] = lineNum
 
         # build wildcard masks from bit-length repr.
         if lineArgs['source_mask']=='32':
-        	lineArgs['source_mask']=''
-        	lineArgs['source_ip']='host '+lineArgs['source_ip']
+            lineArgs['source_mask']=''
+            lineArgs['source_ip']='host '+lineArgs['source_ip']
         if lineArgs['destination_mask']=='32':
-        	lineArgs['destination_mask']=''
-        	lineArgs['destination_ip']='host '+lineArgs['destination_ip']
+            lineArgs['destination_mask']=''
+            lineArgs['destination_ip']='host '+lineArgs['destination_ip']
         # build a proper source/dest port def.syntax
         lineArgs['source_port']=('eq '+lineArgs['source_port']) if len(lineArgs['source_port']) else lineArgs['source_port']
         lineArgs['destination_port']=('eq '+lineArgs['destination_port']) if len(lineArgs['destination_port']) else lineArgs['destination_port']
@@ -297,76 +297,76 @@ def printAcl6(acl,conf):
     return re.sub(r'\\$','',output.strip())
     
 def getAclName(acl):
-	if acl is None: 
-		return ""
-	if hasattr(acl,'number') and 'cisco' in acl.number:
-		return acl.number['cisco']
-	else: 
-		return acl.name    
+    if acl is None: 
+        return ""
+    if hasattr(acl,'number') and 'cisco' in acl.number:
+        return acl.number['cisco']
+    else: 
+        return acl.name    
 %>
 <%!
 def printAAAServers(aaa):
-	# add (.*\n)* or split the definition 
-	aaaServers=""
-	""" print groups """
-	for groupName in aaa.groups:
-		group = aaa.groups[groupName]
-		aaaServers += "aaa group server {0} {1}\\\n".format(
-			group['type'],
-			groupName
-			)
-		
-		for hostName in group['hosts']:
-			aaaServers += " server name {0}\\\n".format(hostName)
+    # add (.*\n)* or split the definition 
+    aaaServers=""
+    """ print groups """
+    for groupName in aaa.groups:
+        group = aaa.groups[groupName]
+        aaaServers += "aaa group server {0} {1}\\\n".format(
+            group['type'],
+            groupName
+            )
+        
+        for hostName in group['hosts']:
+            aaaServers += " server name {0}\\\n".format(hostName)
 
-	""" print hosts """
-	for hostName in aaa.hosts:
-		host = aaa.hosts[hostName]
-		if 'ip' in host:
-			aaaServers += "{0} server {1}\\\n".format(
-				host['type'],
-				hostName
-			)
-			aaaServers += " address ipv4 {0}\\\n".format(
-				host['ip']
-			)
-	return re.sub(r'\\$','',aaaServers.strip())
-	
+    """ print hosts """
+    for hostName in aaa.hosts:
+        host = aaa.hosts[hostName]
+        if 'ip' in host:
+            aaaServers += "{0} server {1}\\\n".format(
+                host['type'],
+                hostName
+            )
+            aaaServers += " address ipv4 {0}\\\n".format(
+                host['ip']
+            )
+    return re.sub(r'\\$','',aaaServers.strip())
+    
 def printAAAServers_old(aaa):
-	output=""
-	for host in aaa.hosts:
-		output+="{1}-server host {0}.*\\\n".format(
-			aaa.hosts[host]['ip'],
-			aaa.hosts[host]['type'].lower())
-	return re.sub(r'\\$','',output.strip())				
+    output=""
+    for host in aaa.hosts:
+        output+="{1}-server host {0}.*\\\n".format(
+            aaa.hosts[host]['ip'],
+            aaa.hosts[host]['type'].lower())
+    return re.sub(r'\\$','',output.strip())                
 %>
 
 <%!
 """ SNMP """ 
 def printSnmpCommunity(comId,snmp):
-	com=snmp.communities[comId]
-	if com['version'] == '1' or com['version'] == '2' or com['version'] == '2c':
-		community = com['community']
-	else:
-		return ERR_INVALID_VERSION
-	if com['privilege'].lower() in ['read-only','ro']:
-		priv = 'RO'
-	elif com['privilege'].lower() in ['read-write','rw']:
-		priv = 'RW'
-	else:
-		return ERR_INVALID_PRIV
-	if 'aclId' in com:
-		if com['aclId'] in snmp.acls:
-			aclName = getAclName(snmp.acls[com['aclId']])
-		else:
-			aclName="ERR_ACL_FOR_COMMUNITY_NOT_DEFINED"
-	else:
-		aclName = ""
-	return ("snmp-server community %s %s %s" % (
-		community,
-		priv,
-		aclName
-	)).strip()
+    com=snmp.communities[comId]
+    if com['version'] == '1' or com['version'] == '2' or com['version'] == '2c':
+        community = com['community']
+    else:
+        return ERR_INVALID_VERSION
+    if com['privilege'].lower() in ['read-only','ro']:
+        priv = 'RO'
+    elif com['privilege'].lower() in ['read-write','rw']:
+        priv = 'RW'
+    else:
+        return ERR_INVALID_PRIV
+    if 'aclId' in com:
+        if com['aclId'] in snmp.acls:
+            aclName = getAclName(snmp.acls[com['aclId']])
+        else:
+            aclName="ERR_ACL_FOR_COMMUNITY_NOT_DEFINED"
+    else:
+        aclName = ""
+    return ("snmp-server community %s %s %s" % (
+        community,
+        priv,
+        aclName
+    )).strip()
 %>
 # Definition of classes 
 ConfigClassName:Selectable
@@ -421,7 +421,7 @@ ConfigClassSelected:Yes
 ConfigClassParentName:ICS Level 2 
 
 ###################
-#	Data plane
+#    Data plane
 ###################
 
 ConfigRuleName:3.1 - Forbid IP source-route
@@ -973,7 +973,7 @@ ConfigClassParentName:2. Control plane
 <%
 syslogHosts=""
 for name,host in syslog.hosts.items():
-	syslogHosts+="logging {0}\\\n".format(host)
+    syslogHosts+="logging {0}\\\n".format(host)
 syslogHosts=syslogHosts[:-2]
 %>
 ConfigRuleName:2.2.1 Syslog logging 
@@ -1406,18 +1406,18 @@ aaa_methodsLists=[]
 aaa_methodsListsTypes=[]
 
 for line in aaa.methodsLists:
-	methods=""
-	for method in aaa.methodsLists[line]['methods']:
-		methods+=method+' '
-	methods=methods.strip()
-	aaa_methodsLists.append(
-		"aaa authentication {lineType} {name} {methods}\\\n".format(
-			lineType=aaa.methodsLists[line]['type']['cisco'],
-			name=line,
-			methods=methods.replace('+','\+') #because of possible tacacs+
-			)
-		)
-	aaa_methodsListsTypes.append(aaa.methodsLists[line]['type']['cisco'])
+    methods=""
+    for method in aaa.methodsLists[line]['methods']:
+        methods+=method+' '
+    methods=methods.strip()
+    aaa_methodsLists.append(
+        "aaa authentication {lineType} {name} {methods}\\\n".format(
+            lineType=aaa.methodsLists[line]['type']['cisco'],
+            name=line,
+            methods=methods.replace('+','\+') #because of possible tacacs+
+            )
+        )
+    aaa_methodsListsTypes.append(aaa.methodsLists[line]['type']['cisco'])
 %>
 % if aaa_methodsLists and len(aaa_methodsLists)>0:
 ConfigClassName:1.3.1.1 AAA Methods lists
@@ -1507,8 +1507,8 @@ ConfigClassParentName:1.4 SNMP
 <%
 roComsRegex=''
 for index,com in snmp.communities.items():
-	if com['privilege']=='RO':
-		roComsRegex+=com['community']+'|'
+    if com['privilege']=='RO':
+        roComsRegex+=com['community']+'|'
 roComsRegex='('+roComsRegex[:-1]+')'
 %>
 ConfigRuleName:1.4.3.1 Forbid RO communities to defined also as RW 
