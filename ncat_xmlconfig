@@ -26,7 +26,7 @@ def main():
     Handle input args
     """
     argParser=argparse.ArgumentParser(description="Wrapper for router audit tool ncat.")
-    argParser.add_argument('-t','--configType',help="Chooses the directory with configuration files for given audit among the others in ncat config dir")
+    #argParser.add_argument('-t','--configType',help="Chooses the directory with configuration files for given audit among the others in ncat config dir")
     argParser.add_argument('-r','--rulesFile_template', help="Name of the mako template file in directory chosen with the -t option")
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device_cfg',nargs='+')
