@@ -118,7 +118,12 @@ def makeListOfVlanRange(vlanRange):
 <%!
 import re 
 
-def printAcl(acl):
+def printAcl(acl,conf):
+	"""
+	acl : an ACL to be printed 
+	conf : denoted whether the printed ACL will be used as a regex to be matched 
+				or printed as a configuration proposal
+	"""
     validAclTypes = ['standard','extended']
     separator = "!"
     output=""
@@ -176,26 +181,24 @@ def printAcl(acl):
         # build rule lines
         if 'optional' in rule and rule['optional']:
         	continue
-        """ do not care about comments """ 
-        output+= '(.+remark.+\\\n)*'
-        """	
-        if 'comment' in rule:
-            comment = rule['comment']
-            # insert the comment line between the rules,
-            # change their seq if neccessary
-            if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
-                if int(lineNum)+1 in acl.rules:
-                    return "! Unable to print acl: {0}\\\n".format(name)
-                else:
-                    lineArgs['seq'] = int(lineNum)+1
-
-            # the comment itself
-            if isNumberedAcl:
-                output += 'access-list {0} '.format(name) + lineComment % comment + '\\\n'
-            else:
-                output += ' ' + lineComment % comment + '\\\n'
-        """
-
+        if not conf:
+        	output+= '(.+remark.+\\\n)*'
+        else: 
+			if 'comment' in rule:
+				comment = rule['comment']
+				# insert the comment line between the rules,
+				# change their seq if neccessary
+				if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
+					if int(lineNum)+1 in acl.rules:
+						return "! Unable to print acl: {0}\\\n".format(name)
+					else:
+						lineArgs['seq'] = int(lineNum)+1
+	
+				# the comment itself
+				if isNumberedAcl:
+					output += 'access-list {0} '.format(name) + lineComment % comment + '\\\n'
+				else:
+					output += ' ' + lineComment % comment + '\\\n'
 
         lineArgs = defaultdict(str,rule)
         lineArgs['seq'] = lineNum
@@ -227,7 +230,12 @@ def printAcl(acl):
     
     return re.sub(r'\\$','',output.strip())
 
-def printAcl6(acl):
+def printAcl6(acl,conf):
+	"""
+	acl : an ACL to be printed 
+	conf : denoted whether the printed ACL will be used as a regex to be matched 
+				or printed as a configuration proposal
+	"""
     separator = "!"
     output=""
 
@@ -251,8 +259,21 @@ def printAcl6(acl):
         # build rule lines
         if 'optional' in rule and rule['optional']:
         	continue
-        """ do not care about comments """ 
-        output+= '( remark.+\\\n)*'
+        if not conf:
+        	output+= '( remark.+\\\n)*' 
+        else:
+			if 'comment' in rule:
+			comment = rule['comment']
+			# insert the comment line between the rules,
+			# change their seq if neccessary
+			if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
+				if int(lineNum)+1 in acl.rules:
+					return "! Unable to print acl: {0}\\\n".format(name)
+					lineArgs['seq'] = int(lineNum)+1
+
+			# the comment itself
+			output += ' ' + lineComment % comment + '\\\n'
+        	
         
         lineArgs = defaultdict(str,rule)
         lineArgs['seq'] = lineNum
@@ -717,11 +738,11 @@ ConfigRuleParentName:2.1.2.1 NTP IPv4 peer ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['peer'])}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['peer'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict peer access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['peer'])}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['peer'],true)}</code>
 
 ConfigRuleName:2.1.2.1.2 NTP IPv4 peer ACL applied 
 ConfigRuleParentName:2.1.2.1 NTP IPv4 peer ACL 
@@ -745,11 +766,11 @@ ConfigRuleParentName:2.1.2.2 NTP IPv4 server ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['server'])}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['server'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict server access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['server'])}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['server'],false)}</code>
 
 ConfigRuleName:2.1.2.2.2 NTP IPv4 server ACL applied 
 ConfigRuleParentName:2.1.2.2 NTP IPv4 server ACL  
@@ -773,11 +794,11 @@ ConfigRuleParentName:2.1.2.3 NTP IPv4 query ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['query'])}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['query'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict query access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['query'])}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['query'],true)}</code>
 
 ConfigRuleName:2.1.2.3.2 NTP IPv4 query ACL applied 
 ConfigRuleParentName:2.1.2.3 NTP IPv4 query ACL 
@@ -801,11 +822,11 @@ ConfigRuleParentName:2.1.2.4 NTP IPv4 sync ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['sync'])}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['sync'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict sync access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['sync'])}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['sync'],true)}</code>
 
 ConfigRuleName:2.1.2.3.2 NTP IPv4 sync ACL applied 
 ConfigRuleParentName:2.1.2.4 NTP IPv4 sync ACL 
@@ -837,11 +858,11 @@ ConfigRuleParentName:2.1.3.1 NTP IPv6 peer ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['peer'])}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['peer'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict peer access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['peer'])}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['peer'],true)}</code>
 
 ConfigRuleName:2.1.3.1.2 NTP IPv6 peer ACL applied 
 ConfigRuleParentName:2.1.3.1 NTP IPv6 peer ACL 
@@ -865,11 +886,11 @@ ConfigRuleParentName:2.1.3.2 NTP IPv6 server ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['server'])}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['server'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict server access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['server'])}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['server'],true)}</code>
 
 ConfigRuleName:2.1.3.2.2 NTP IPv6 server ACL applied 
 ConfigRuleParentName:2.1.3.2 NTP IPv6 server ACL  
@@ -894,11 +915,11 @@ ConfigRuleParentName:2.1.3.3 NTP IPv6 query ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['query'])}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['query'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict query access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['query'])}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['query'],true)}</code>
 
 ConfigRuleName:2.1.3.3.2 NTP IPv6 query ACL applied 
 ConfigRuleParentName:2.1.3.3 NTP IPv6 query ACL 
@@ -922,11 +943,11 @@ ConfigRuleParentName:2.1.3.4 NTP IPv6 sync ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['sync'])}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['sync'],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict sync access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['sync'])}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['sync'],true)}</code>
 
 ConfigRuleName:2.1.3.4.2 NTP IPv6 sync ACL applied 
 ConfigRuleParentName:2.1.3.4 NTP IPv6 sync ACL 
@@ -1088,10 +1109,17 @@ ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSHwInterface
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((?!^interface \S+\n$).+)|(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
-)*^!$))|((switchport mode access\
-)|(.+\
-)*|^ no cdp run$)</code>
+#ConfigRuleMatch:<code>((?!^interface \S+\n$).+)|(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
+#)*^!$))|((switchport mode access\
+#)|(.+\
+#)*|^ no cdp run$)</code>
+% if device.l3:
+ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(interface \S+\
+(description.*)?\
+(?! switchport))|(^ no cdp run)</code>
+% else:
+ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(^ no cdp run)</code>
+% endif
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid CDP to run on endhost interfaces
 ConfigRuleSelected:Yes
@@ -1208,11 +1236,11 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl,false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:${printAcl(vty.acl)}
+ConfigRuleFix:${printAcl(vty.acl,true)}
 % endif 
 
 % if device.ip6 and vty.acl6 is not None:
@@ -1235,11 +1263,11 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl6)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl6,false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:${printAcl(vty.acl6)}
+ConfigRuleFix:${printAcl(vty.acl6,true)}
 % endif 
 % endif 
 
@@ -1463,10 +1491,11 @@ ConfigRuleParentName:1.4.2 ACLs for SNMP communities
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']])}</code>
+ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']],false)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Required acl for snmp community (Rule number 1.4.2.${loop.index+1}) to be defined
 ConfigRuleSelected:Yes
+ConfigRuleFix:${printAcl(snmp.acls[com['acl_id']],true)}
 % endif
 % endif 
 % endfor
