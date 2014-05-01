@@ -426,12 +426,30 @@ ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
 ConfigRuleMatch:<code>no ip source-route</code>
 
-ConfigRuleName:3.2 Forbid IP directed broadcast
+ConfigClassName:3.2 Forbid IP directed broadcast on interfaces 
+ConfigClassDescription:Forbid IP directed broadcast on interfaces
+ConfigClassSelected:Yes
+ConfigClassParentName:3. Data plane
+
+ConfigRuleName:3.2.1 Forbid IP directed broadcast
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSEthernetVlanInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip directed-broadcast</code>
+ConfigRuleFix:interface INSTANCE${"\\"}
+no ip directed-broadcast
+
+% if device.l3:
+ConfigRuleName:3.2.1 Forbid IP directed broadcast on vlan interfaces
+ConfigRuleParentName:3. Data plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSVlanInterface
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>ip directed-broadcast</code>
+ConfigRuleFix:interface Vlan INSTANCE${"\\"}
+no ip directed-broadcast
+% endif
 
 % if dhcpSnooping is not None:
 ConfigClassName:3.3 DHCP snooping 
@@ -591,7 +609,7 @@ ConfigClassParentName:3. Data plane
 ConfigRuleName:3.5.1 Require chosen default urpf mode on every interface
 ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSEthernetVlanInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Required
 ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|( switchport)|( shutdown)</code>
 ConfigRuleImportance:10
@@ -599,7 +617,21 @@ ConfigRuleDescription:Require chosen default urpf mode on every L3 interface
 ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
  ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'}
+
+ConfigRuleName:3.5.2 Require chosen default urpf mode on every Vlan interface
+ConfigRuleParentName:3.5 URPF
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSVlanInterface
+ConfigRuleType:Required
+ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|( switchport)|( shutdown)</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require chosen default urpf mode on every L3 interface
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface Vlan INSTANCE${"\\"}
+ ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'}
+
 % endif
+
 
 % if ipSourceGuard is not None:
 ConfigClassName:3.6 IP source guard
