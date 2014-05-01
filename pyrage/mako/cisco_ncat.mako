@@ -429,7 +429,7 @@ ConfigRuleMatch:<code>no ip source-route</code>
 ConfigRuleName:3.2 Forbid IP directed broadcast
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetVlanInterface
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip directed-broadcast</code>
 
@@ -468,7 +468,7 @@ ConfigRuleFix:no ip dhcp snooping vlan
 ConfigRuleName:3.3.2 Require chosen DHCP trusted ports
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(dhcpSnooping.trustedPorts)}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>ip dhcp snooping trust</code>
@@ -483,7 +483,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.3.3 Forbid any other dhcp snooping trusted ports 
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(dhcpSnooping.trustedPorts)}
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>^ ip dhcp snooping trust$</code>
@@ -496,7 +496,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.3.2 Forbid any dhcp snooping trusted ports 
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>^ ip dhcp snooping trust$</code>
@@ -542,7 +542,7 @@ ConfigRuleFix:no ip arp inspection vlan
 ConfigRuleName:3.4.2 Require Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(arpInspection.trustedPorts)}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>^ ip arp inspection trust$</code>
@@ -556,7 +556,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.4.3 Forbid any other Arp inspection trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(arpInspection.trustedPorts)}
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>^ ip arp inspection trust$</code>
@@ -569,7 +569,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.4.2 Forbid any Arp inspection trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>^ ip arp inspection trust$</code>
@@ -591,10 +591,9 @@ ConfigClassParentName:3. Data plane
 ConfigRuleName:3.5.1 Require chosen default urpf mode on every interface
 ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
-ConfigRuleInstance:(.+Ethernet)|(Vlan.+)
+ConfigRuleContext:IOSEthernetVlanInterface
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|^ switchport$|^ shutdown$</code>
+ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|( switchport)|( shutdown)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require chosen default urpf mode on every L3 interface
 ConfigRuleSelected:Yes
@@ -611,7 +610,7 @@ ConfigClassParentName:3. Data plane
 ConfigRuleName:3.6.1 Require IP source guard to be enabled on given interfaces
 ConfigRuleParentName:3.6 IP source guard
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:AccessPort
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(makeListOfVlanRange(ipSourceGuard.vlanRange))}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>ip verify source$</code>
@@ -624,7 +623,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.6.2 Forbid IP source guard to be configured on other interfaces 
 ConfigRuleParentName:3.6 IP source guard
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:AccessPort
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(makeListOfVlanRange(ipSourceGuard.vlanRange))}
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>^ ip verify source$</code>
@@ -637,7 +636,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.6.1 Forbid IP source guard to be enabled on any interface
 ConfigRuleParentName:3.6 IP source guard
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:AccessPort
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>^ ip verify source$</code>
@@ -652,10 +651,10 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.7 Limit number of MAC addresses on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(no switchport)|(switchport mode trunk)|(switchport port-security maximum (\d+)$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(switchport port-security maximum (\d+))</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit number of MAC addresses on an interface 
 ConfigRuleSelected:Yes
@@ -665,10 +664,10 @@ switchport port-security maximum 1
 ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(no switchport)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
@@ -678,7 +677,7 @@ switchport port-security maximum 1
 ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>(?!^interface \S+\n$).+</code>
@@ -1101,18 +1100,12 @@ ConfigRuleSelected:Yes
 ConfigRuleName:2.6 Forbid CDP to run on endhost interfaces  
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Required
-#ConfigRuleMatch:<code>((?!^interface \S+\n$).+)|(^ shutdown$)|((switchport mode trunk)|((?!^ switchport$)(.+\
-#)*^!$))|((switchport mode access\
-#)|(.+\
-#)*|^ no cdp enable$)</code>
 % if device.l3:
-ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(interface \S+\
-(description.*)?\
-(?! switchport))|(^ no cdp enable)</code>
+ConfigRuleMatch:<code>( shutdown)|( switchport mode trunk)|((no)? ip address.*)|( no cdp enable)</code>
 % else:
-ConfigRuleMatch:<code>(^ shutdown)|(^ switchport mode trunk)|(^ no cdp enable)</code>
+ConfigRuleMatch:<code>( shutdown)|( switchport mode trunk)|( no cdp enable)</code>
 % endif
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid CDP to run on endhost interfaces
@@ -1121,10 +1114,10 @@ ConfigRuleFix:interface INSTANCE\
 no cdp run
 
 % if device.l2:
-ConfigRuleName:2.7 Forbid DTP trunk negotiation  
+ConfigRuleName:2.7 Forbid port in DTP dynamic mode 
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
 ConfigRuleMatch:<code>(^ shutdown)|((no)* ip address.*)|(switchport mode (access|trunk))</code>
@@ -1143,10 +1136,10 @@ ConfigClassParentName:2. Control plane
 ConfigRuleName:2.8.1 Require STP portfast   
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(spanning-tree portfast$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(spanning-tree portfast)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require STP portfast feature to be configured on access ports   
 ConfigRuleSelected:Yes
@@ -1156,10 +1149,10 @@ spanning-tree portfast
 ConfigRuleName:2.8.2 Require STP BPDU guard   
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSHwInterface
+ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(no switchport)|(switchport mode trunk)|(spanning-tree bpduguard enable$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(spanning-tree bpduguard enable)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require STP BPDU guard feature to be configured on access ports   
 ConfigRuleSelected:Yes
