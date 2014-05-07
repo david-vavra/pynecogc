@@ -436,7 +436,8 @@ ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip directed-broadcast</code>
+# TEST
+ConfigRuleMatch:<code> ${"(?<!no)"} ip directed-broadcast</code> 
 ConfigRuleFix:interface INSTANCE${"\\"}
 no ip directed-broadcast
 
@@ -446,7 +447,7 @@ ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSVlanInterface
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip directed-broadcast</code>
+ConfigRuleMatch:<code>${"(?<!no)"} ip directed-broadcast</code>
 ConfigRuleFix:interface Vlan INSTANCE${"\\"}
 no ip directed-broadcast
 % endif
@@ -684,7 +685,7 @@ ConfigRuleName:3.7 Limit number of MAC addresses on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
-ConfigRuleInstance:.*
+ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
 ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(switchport port-security maximum (\d+))</code>
 ConfigRuleImportance:10
@@ -697,7 +698,7 @@ ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
-ConfigRuleInstance:.*
+ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
 ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
 ConfigRuleImportance:10
@@ -999,7 +1000,7 @@ ConfigClassParentName:2. Control plane
 <%
 syslogHosts=""
 for name,host in syslog.hosts.items():
-    syslogHosts+="logging {0}\\\n".format(host)
+    syslogHosts+="logging (host )?{0}\\\n".format(host)
 syslogHosts=syslogHosts[:-2]
 %>
 ConfigRuleName:2.2.1 Syslog logging 
@@ -1019,7 +1020,7 @@ ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^logging facility ${syslog.severity}$</code>
+ConfigRuleMatch:<code>^logging trap ${syslog.severity}$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require a syslog facility configured 
 ConfigRuleSelected:Yes
@@ -1027,7 +1028,7 @@ ConfigRuleFix:<code>logging facility ${syslog.severity}</code>
 
 % endif 
 % if syslog.facility is not None:
-ConfigRuleName:2.2.3 Syslog severity 
+ConfigRuleName:2.2.3 Syslog facility 
 ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
@@ -1150,7 +1151,7 @@ ConfigRuleName:2.7 Forbid port in DTP dynamic mode
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
-ConfigRuleInstance:.*
+ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
 ConfigRuleMatch:<code>(^ shutdown)|((no)* ip address.*)|(switchport mode (access|trunk))</code>
 #ConfigRuleMatch:<code>(^ switchport\n(?!((.+\n)* switchport mode (access|trunk))))</code>
@@ -1169,7 +1170,7 @@ ConfigRuleName:2.8.1 Require STP portfast
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
-ConfigRuleInstance:.*
+ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
 ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(spanning-tree portfast)</code>
 ConfigRuleImportance:10
@@ -1182,7 +1183,7 @@ ConfigRuleName:2.8.2 Require STP BPDU guard
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
-ConfigRuleInstance:.*
+ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
 ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(spanning-tree bpduguard enable)</code>
 ConfigRuleImportance:10
