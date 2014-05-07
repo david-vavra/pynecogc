@@ -611,7 +611,7 @@ ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Required
-ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|( switchport)|( shutdown)</code>
+ConfigRuleMatch:<code>(ip verify unicast source reachable-via ${'rx' if uRPF.mode.lower()=='strict' else 'any'})|( switchport)|( shutdown)|((?!^interface \S+\n$).+)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require chosen default urpf mode on every L3 interface
 ConfigRuleSelected:Yes
