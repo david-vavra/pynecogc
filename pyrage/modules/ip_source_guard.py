@@ -17,9 +17,8 @@ class IP_Source_Guard(IPlugin):
             self.vlanRange = vlanRange
 
     def parseContext(self,context,*args):
-        instance=self
         for ipsg in context.iter('ip_source_guard'):
-            if context.find('vlan_range') is not None:
-                instance.addVlanRange(context.find('vlan_range').text)
+            if ipsg.find('vlan_range') is not None:
+                self.addVlanRange(ipsg.find('vlan_range').text)
 
 
