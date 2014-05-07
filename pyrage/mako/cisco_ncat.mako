@@ -441,7 +441,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 no ip directed-broadcast
 
 % if device.l3:
-ConfigRuleName:3.2.1 Forbid IP directed broadcast on vlan interfaces
+ConfigRuleName:3.2.2 Forbid IP directed broadcast on vlan interfaces
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSVlanInterface
