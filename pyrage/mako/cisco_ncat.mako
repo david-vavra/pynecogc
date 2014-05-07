@@ -1000,7 +1000,7 @@ ConfigClassParentName:2. Control plane
 <%
 syslogHosts=""
 for name,host in syslog.hosts.items():
-    syslogHosts+="logging {0}\\\n".format(host)
+    syslogHosts+="logging (host )?{0}\\\n".format(host)
 syslogHosts=syslogHosts[:-2]
 %>
 ConfigRuleName:2.2.1 Syslog logging 
@@ -1020,7 +1020,7 @@ ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^logging facility ${syslog.severity}$</code>
+ConfigRuleMatch:<code>^logging trap ${syslog.severity}$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require a syslog facility configured 
 ConfigRuleSelected:Yes
@@ -1028,7 +1028,7 @@ ConfigRuleFix:<code>logging facility ${syslog.severity}</code>
 
 % endif 
 % if syslog.facility is not None:
-ConfigRuleName:2.2.3 Syslog severity 
+ConfigRuleName:2.2.3 Syslog facility 
 ConfigRuleParentName:2.2 Syslog
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
