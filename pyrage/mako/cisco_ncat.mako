@@ -1042,7 +1042,7 @@ ConfigRuleFix:<code>logging facility ${syslog.facility}</code>
 % endif
 % endif
 
-% if device.l3 and bgp:
+% if device.l3:
 ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
 ConfigClassSelected:Yes
@@ -1073,7 +1073,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{OSPF auth
-% if device.l3 and ospf:
+% if device.l3:
 ConfigClassName:2.4 OSPF
 ConfigClassDescription:OSPF related rules
 ConfigClassSelected:Yes
@@ -1102,7 +1102,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{HSRP auth
-% if device.l3 and hsrp:
+% if device.l3:
 ConfigClassName:2.5 HSRP 
 ConfigClassDescription:HSRP
 ConfigClassSelected:Yes
@@ -1261,6 +1261,19 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
 ConfigRuleFix:${printAcl(vty.acl,true)}
+% else: 
+ConfigRuleName:1.1.1.2 Require SOME VTY ACL for Ipv4 applied
+ConfigRuleParentName:1.1.1 Limit VTY remote access
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSLine
+ConfigRuleInstance:vty.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>^ access-class .+ in$</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require SOME VTY ACL for Ipv4 applied
+ConfigRuleSelected:Yes
+ConfigRuleFix:line INSTANCE${"\\"}
+access-class FIXME_DEFINE_ACL in
 % endif 
 
 % if device.ip6 and vty.acl6 is not None:
@@ -1270,7 +1283,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ipv6 access-class ${getAclName(vty.acl6)}</code>
+ConfigRuleMatch:<code>ipv6 access-class ${getAclName(vty.acl6)} in</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
@@ -1288,6 +1301,19 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
 ConfigRuleFix:${printAcl(vty.acl6,true)}
+% else:
+ConfigRuleName:1.1.1.4 Require SOME VTY ACL for Ipv6 applied
+ConfigRuleParentName:1.1.1 Limit VTY remote access
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSLine
+ConfigRuleInstance:vty.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>ipv6 access-class .+ in</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require SOME VTY ACL for Ipv6 applied
+ConfigRuleSelected:Yes
+ConfigRuleFix:line INSTANCE${"\\"}
+access-class FIXME_DEFINE_ACL in
 % endif 
 % endif 
 
@@ -1420,7 +1446,6 @@ ConfigRuleImportance:10
 ConfigRuleDescription:AAA (tacacs+,radius) hosts definition in a old format
 ConfigRuleSelected:Yes
 
-
 # possibly req line>login authentication console 
 <%
 aaa_methodsLists=[]
@@ -1441,13 +1466,13 @@ for line in aaa.methodsLists:
     aaa_methodsListsTypes.append(aaa.methodsLists[line]['type']['cisco'])
 %>
 % if aaa_methodsLists and len(aaa_methodsLists)>0:
-ConfigClassName:1.3.1.1 AAA Methods lists
+ConfigClassName:1.3.1.2 AAA Methods lists
 ConfigClassDescription:AAA methods lists 
 ConfigClassSelected:Yes
 ConfigRuleParentName:1.3.1 Tacacs
 
 % for methodList in aaa_methodsLists:
-ConfigRuleName:1.3.2.1.${loop.index+1} AAA method list n. ${loop.index+1}, ${aaa_methodsListsTypes[loop.index]}
+ConfigRuleName:1.3.1.2.${loop.index+1} AAA method list n. ${loop.index+1}, ${aaa_methodsListsTypes[loop.index]}
 ConfigRuleParentName:1.3.1.1 AAA Methods lists
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
@@ -1456,10 +1481,11 @@ ConfigRuleMatch:<code>${aaa_methodsLists[loop.index]}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Required proper method lists to be configured
 ConfigRuleSelected:Yes
+
 % endfor
 
 % else:
-ConfigClassName:1.3.2.1 Method lists
+ConfigClassName:1.3.1.2 Method lists
 ConfigClassDescription:AAA method lists 
 ConfigClassSelected:No
 ConfigRuleParentName:1.3.1 Tacacs
