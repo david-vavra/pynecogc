@@ -436,7 +436,7 @@ ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip directed-broadcast</code>
+ConfigRuleMatch:<code> ${"(?<!no)"} ip directed-broadcast</code>
 ConfigRuleFix:interface INSTANCE${"\\"}
 no ip directed-broadcast
 
@@ -446,7 +446,7 @@ ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSVlanInterface
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>ip directed-broadcast</code>
+ConfigRuleMatch:<code>${"(?<!no)"} ip directed-broadcast</code>
 ConfigRuleFix:interface Vlan INSTANCE${"\\"}
 no ip directed-broadcast
 % endif
