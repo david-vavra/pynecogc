@@ -606,7 +606,7 @@ ConfigClassDescription:URPF related rules
 ConfigClassSelected:Yes
 ConfigClassParentName:3. Data plane
 
-ConfigRuleName:3.5.1 Require chosen default urpf mode on every interface
+ConfigRuleName:3.5.1 Require chosen default urpf mode on every hw L3 interface
 ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
