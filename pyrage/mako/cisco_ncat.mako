@@ -395,7 +395,7 @@ ConfigDataDefaultValue:None
 ConfigDataHowToGet:None
 ConfigDataDescription:None
 
-ConfigClassName:ICS Level 2 
+ConfigClassName:ICS secure configuration guideline
 ConfigClassDescription:Root class for all ICS security requirements of level 2
 ConfigClassSelected:Yes
 ConfigClassParentName:Selectable
@@ -403,17 +403,17 @@ ConfigClassParentName:Selectable
 ConfigClassName:1. Management plane 
 ConfigClassDescription:Management plane root class
 ConfigClassSelected:Yes
-ConfigClassParentName:ICS Level 2 
+ConfigClassParentName:ICS secure configuration guideline
 
 ConfigClassName:2. Control plane 
 ConfigClassDescription:Control plane root class
 ConfigClassSelected:Yes
-ConfigClassParentName:ICS Level 2 
+ConfigClassParentName:ICS secure configuration guideline
 
 ConfigClassName:3. Data plane 
 ConfigClassDescription:Data plane root class
 ConfigClassSelected:Yes
-ConfigClassParentName:ICS Level 2 
+ConfigClassParentName:ICS secure configuration guideline
 
 ###################
 #    Data plane

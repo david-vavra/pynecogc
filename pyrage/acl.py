@@ -1,7 +1,7 @@
 __author__ = 'David Vavra'
 
-from utils import ErrRequiredData
-from utils import ErrOptionalData
+from pyrage.utils import ErrRequiredData
+from pyrage.utils import ErrOptionalData
 
 class ACL():
     """
