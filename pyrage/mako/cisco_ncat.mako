@@ -1301,7 +1301,7 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
 ConfigRuleFix:${printAcl(vty.acl6,true)}
-% else:
+% elif device.ip6:
 ConfigRuleName:1.1.1.4 Require SOME VTY ACL for Ipv6 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
