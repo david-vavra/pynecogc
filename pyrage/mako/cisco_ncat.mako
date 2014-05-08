@@ -1113,7 +1113,7 @@ ConfigRuleParentName:2.5 HSRP
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:HSRPGroup
 ConfigRuleType:Required
-ConfigRuleMatch:<code>standby group (\d+) authentication</code>
+ConfigRuleMatch:<code>standby (\d+) authentication</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an authentication to be configured in every HSRP group
 ConfigRuleSelected:Yes
@@ -1123,7 +1123,7 @@ ConfigRuleParentName:2.5 HSRP
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:HSRPGroup
 ConfigRuleType:Required
-ConfigRuleMatch:<code>standby group (\d+) authentication md5</code>
+ConfigRuleMatch:<code>standby (\d+) authentication md5</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an authentication (md5) to be configured in every HSRP group
 ConfigRuleSelected:Yes
@@ -1473,7 +1473,7 @@ ConfigRuleParentName:1.3.1 Tacacs
 
 % for methodList in aaa_methodsLists:
 ConfigRuleName:1.3.1.2.${loop.index+1} AAA method list n. ${loop.index+1}, ${aaa_methodsListsTypes[loop.index]}
-ConfigRuleParentName:1.3.1.1 AAA Methods lists
+ConfigRuleParentName:1.3.1.2 AAA Methods lists
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
