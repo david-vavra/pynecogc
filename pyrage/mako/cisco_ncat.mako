@@ -1237,7 +1237,7 @@ transport input none
 % endif 
 
 % if device.ip4:
-% if vty.acl not None:
+% if vty.acl is not None:
 ConfigRuleName:1.1.1.2 Require VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
