@@ -1319,6 +1319,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:line INSTANCE${"\\"}
 access-class FIXME_DEFINE_ACL in
 % endif 
+% endif 
 
 ConfigRuleName:1.1.2 - Forbid Auxiliary Port
 ConfigRuleParentName:1.1 Access control rules
