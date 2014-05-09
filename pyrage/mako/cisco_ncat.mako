@@ -1236,7 +1236,8 @@ ConfigRuleFix:line INSTANCE${"\\"}
 transport input none
 % endif 
 
-% if device.ip4 and vty.acl is not None:
+% if device.ip4:
+% if vty.acl not None:
 ConfigRuleName:1.1.1.2 Require VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
@@ -1261,8 +1262,9 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
 ConfigRuleFix:${printAcl(vty.acl,true)}
-% else: 
-ConfigRuleName:1.1.1.2 Require SOME VTY ACL for Ipv4 applied
+% endif 
+
+ConfigRuleName:1.1.1.4 Require SOME VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
@@ -1276,8 +1278,9 @@ ConfigRuleFix:line INSTANCE${"\\"}
 access-class FIXME_DEFINE_ACL in
 % endif 
 
-% if device.ip6 and vty.acl6 is not None:
-ConfigRuleName:1.1.1.4 Require VTY ACL for Ipv6 applied
+% if device.ip6:
+% if vty.acl6 is not None:
+ConfigRuleName:1.1.1.5 Require VTY ACL for Ipv6 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
@@ -1290,7 +1293,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:line INSTANCE${"\\"}
 access-class ${vty.acl6} in
 
-ConfigRuleName:1.1.1.5 Require VTY ACL for Ipv6 defined
+ConfigRuleName:1.1.1.6 Require VTY ACL for Ipv6 defined
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
@@ -1301,8 +1304,9 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
 ConfigRuleFix:${printAcl(vty.acl6,true)}
-% elif device.ip6:
-ConfigRuleName:1.1.1.4 Require SOME VTY ACL for Ipv6 applied
+% endif
+
+ConfigRuleName:1.1.1.7 Require SOME VTY ACL for Ipv6 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
@@ -1314,7 +1318,6 @@ ConfigRuleDescription:Require SOME VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
 ConfigRuleFix:line INSTANCE${"\\"}
 access-class FIXME_DEFINE_ACL in
-% endif 
 % endif 
 
 ConfigRuleName:1.1.2 - Forbid Auxiliary Port
