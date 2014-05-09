@@ -62,10 +62,13 @@ def main():
         raise SystemExit(2)
     for dev,instance in deviceInstances.items():
         f=open('{0}.rules'.format(dev),'w')
-        f.write(mkt.render(
-            device=instance,
-            **instance.instances))
-        f.close()
+        try:
+            f.write(mkt.render(
+                device=instance,
+                **instance.instances))
+            f.close()
+        except Exception as e:
+            logger.log('error',dev+':'+ e.message)
 
     """
      launch ncat for every device
