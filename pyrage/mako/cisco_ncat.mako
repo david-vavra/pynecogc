@@ -1244,7 +1244,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^ access-class ${getAclName(vty.acl)} in$</code>
+ConfigRuleMatch:<code>^ access-class ${getAclName(vty.acl)} in( .*)?</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 applied
 ConfigRuleSelected:Yes
@@ -1270,7 +1270,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^ access-class .+ in$</code>
+ConfigRuleMatch:<code>^ access-class .+ in( .*)?</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require SOME VTY ACL for Ipv4 applied
 ConfigRuleSelected:Yes
@@ -1286,7 +1286,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ipv6 access-class ${getAclName(vty.acl6)} in</code>
+ConfigRuleMatch:<code>ipv6 access-class ${getAclName(vty.acl6)} in( .*)?</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
@@ -1312,7 +1312,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSLine
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ipv6 access-class .+ in</code>
+ConfigRuleMatch:<code>ipv6 access-class .+ in( .*)?</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require SOME VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
