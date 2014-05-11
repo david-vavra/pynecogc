@@ -57,9 +57,10 @@ def main():
                      input_encoding='utf-8',
                      output_encoding='utf-8',
                      default_filters=['decode.utf8'],)#,lookup=lookup,strict_undefined=True)
-    except IOError as e:
+    except Exception as e:
         logger.log('critical', 'Unable to open template file! {0}'.format(str(e)))
         raise SystemExit(2)
+    
     for dev,instance in deviceInstances.items():
         f=open('{0}.rules'.format(dev),'w')
         try:
