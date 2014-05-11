@@ -43,7 +43,7 @@ def printComwareAcl(acl):
             """
             return "# UNABLE TO PRINT ACL: '{0}'".format(acl.id)
 
-    if len(acl.name)>0:
+    if acl.name not None:
         output+="acl number {num} name {name}\\\n".format(
             num=aclNum,
             name=acl.name
@@ -173,7 +173,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:<code>dhcp-snooping</code>
 
 
-% if len(dhcpSnooping.trustedPorts)>0:
+% if dhcpSnooping.trustedPorts not None:
 ConfigRuleName:3.3.2 Require DHCP trusted ports
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion: version.*
@@ -211,7 +211,7 @@ ConfigRuleDescription:Require Arp inspection enabled
 ConfigRuleSelected:Yes
 ConfigRuleFix:<code>arp detection enable</code>
 
-% if len(arpInspection.trustedPorts)>0:
+% if arpInspection.trustedPorts not None:
 ConfigRuleName:3.4.2 Require Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion: version.*
@@ -294,7 +294,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ###################
 #{{{ Control plane
 ###################
-% if ntp is not None and len(ntp.hosts)>0:
+% if ntp is not None and ntp.hosts not None:
 ConfigClassName:2.1 NTP 
 ConfigClassDescription:NTP related rules
 ConfigClassSelected:Yes
@@ -321,7 +321,7 @@ ConfigRuleFix:${ntpServersRegex}
 % endif 
 
 #{{{ SYSLOG TODO add severity and facility
-% if syslog is not None and len(syslog.hosts)>0:
+% if syslog is not None and syslog.hosts not None:
 ConfigClassName:2.2 Syslog
 ConfigClassDescription:Syslog events logging related rules 
 ConfigClassSelected:Yes
@@ -399,12 +399,12 @@ ConfigRuleParentName:2.4 OSPF
 ConfigRuleVersion: version.*
 ConfigRuleContext:OSPF_Router_Area
 ConfigRuleType:Required
-ConfigRuleMatch:<code>authentication-mode md5$</code>
+ConfigRuleMatch:<code>authentication-mode md5</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require message-digest auth for every defined OSPF area 
 ConfigRuleSelected:Yes
 ConfigRuleDiscussion:HP Layer-3 IP Routing Configuration Guide
-ConfigRuleFix:ospf EDIT-BY-HAND${newline()} area EDIT-BY-HAND${newline()}  authentication-mode md5
+ConfigRuleFix:ospf EDIT-BY-HAND${newline()} area /CONTEXT/  authentication-mode md5
 % endif 
 
 ###################
@@ -419,7 +419,7 @@ ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
 
 #{{{ VTY
-% if vty and len(vty.protocols)>0:
+% if vty and vty.protocols not None:
 ConfigClassName:1.1.1 Limit VTY remote access 
 ConfigClassDescription:Limit remote access methods
 ConfigClassSelected:Yes

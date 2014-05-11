@@ -25,6 +25,8 @@ class DHCPSnooping(IPlugin):
             self.trustedPorts.append(trustedInterface)
 
     def addVlanRange(self,vlanRange):
+        if vlanRange=='0':
+            self.vlanRange=None
         if not validateVlanRange(vlanRange):
             raise InvalidVlanRange(":dhcp_snooping:Invalid dhcp snooping vlan range given: '{0}'".format(vlanRange),
                                    vlanRange)

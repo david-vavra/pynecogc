@@ -21,6 +21,8 @@ class ArpInspection(IPlugin):
             self.trustedPorts.append(trustedInterface)
 
     def addVlanRange(self,vlanRange):
+        if vlanRange=='0':
+            self.vlanRange=None
         if not validateVlanRange(vlanRange):
             raise InvalidVlanRange(":arp_inspection:Invalid arp inspection vlan range given: '{0}'".format(vlanRange),
                                    vlanRange)
