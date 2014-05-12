@@ -349,7 +349,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 
 ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
 ConfigRuleParentName:3. Data plane
-ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
@@ -363,16 +363,16 @@ shutdown
 
 ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
-ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleVersion:version.*
 ConfigRuleContext:ComwareEthernetInterface
-ConfigRuleInstance:^(?!.+\.).+
+ConfigRuleInstance:.+
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
+ConfigRuleMatch:<code>multicast-suppression (kbps |pps )? \d+</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
-switchport port-security maximum 1
+multicast-suppression 20
 
 
 
@@ -513,7 +513,7 @@ stp edged-port enable
 
 ConfigRuleName:2.8.2 Require STP BPDU guard   
 ConfigRuleParentName:2. Control plane
-ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleVersion:version.*
 ConfigRuleContext:ComwareGlobal
 ConfigRuleType:Required
 ConfigRuleMatch:<code>stp bpdu-protection</code>
