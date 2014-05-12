@@ -193,13 +193,13 @@ ConfigClassParentName:ICS
 
 ConfigRuleName:3.2 Forbid IP directed broadcast
 ConfigRuleParentName:3. Data plane
-ConfigRuleVersion: version.*
+ConfigRuleVersion:version.*
 ConfigRuleContext:ComwareGlobal
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>ip forward-broadcast</code>
-ConfigRuleFix:<code>undo ip forward-broadcast</code>
 ConfigRuleDiscussion:HP Networking guide to hardening Comware-based devices
-
+ConfigRuleFix:FIXME_CONTEXT${"\\"}
+undo ip forward-broadcast
 
 #{{{DHCP Snooping
 % if dhcpSnooping:
@@ -343,9 +343,39 @@ ConfigRuleDescription:Require IP source guard to be enabled on given interfaces
 ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
  ip check source ip-address mac-address
-
 % endif 
-#}}}
+
+
+
+ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
+ConfigRuleParentName:3. Data plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:ComwareHwInterface
+ConfigRuleInstance:.*
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>(?!^interface \S+\n port link-mode (bridge|route)\n$).+</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid non-shutdown interface in default configuration
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+shutdown
+
+
+ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
+ConfigRuleParentName:3. Data plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSEthernetInterface
+ConfigRuleInstance:^(?!.+\.).+
+ConfigRuleType:Required
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Limit amount of broadcast traffic on an interface
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+switchport port-security maximum 1
+
+
+
 
 ###################
 #{{{ Control plane
@@ -460,8 +490,38 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require message-digest auth for every defined OSPF area 
 ConfigRuleSelected:Yes
 ConfigRuleDiscussion:HP Layer-3 IP Routing Configuration Guide
-ConfigRuleFix:ospf EDIT-BY-HAND${newline()} area /CONTEXT/  authentication-mode md5
+ConfigRuleFix:ospf EDIT-BY-HAND${newline()} area CONTEXT  authentication-mode md5
 % endif 
+
+% if device.l2:
+ConfigClassName:2.8 STP 
+ConfigClassDescription:STP related rules
+ConfigClassSelected:Yes
+ConfigClassParentName:2. Control plane
+
+ConfigRuleName:2.8.1 Require STP edge ports   
+ConfigRuleParentName:2. Control plane
+ConfigRuleVersion:version.*
+ConfigRuleContext:ComwareHwInterface
+ConfigRuleType:Required
+ConfigRuleMatch:<code>(port link-mode route)|(port link-type trunk)|(stp edged-port enable)</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require STP portfast feature to be configured on access ports   
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+stp edged-port enable
+
+ConfigRuleName:2.8.2 Require STP BPDU guard   
+ConfigRuleParentName:2. Control plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:ComwareGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>stp bpdu-protection</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require STP BPDU guard feature to be configured 
+ConfigRuleSelected:Yes
+ConfigRuleFix:stp bpdu-protection
+% endif
 
 ###################
 #{{{Management plane
@@ -561,18 +621,18 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require SOME VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
 % endif
-
-ConfigRuleName:1.1.2 - Forbid Auxiliary Port
-ConfigRuleParentName:1.1 Access control rules
-ConfigRuleVersion: version.*
-ConfigRuleInstance:aux
-ConfigRuleContext:ComwareVTY
-ConfigRuleType:Required
-ConfigRuleMatch:<code> no exec$</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Forbid Auxiliary Port
-ConfigRuleSelected:yes
-ConfigRuleOptional:no
+# AUX in terms of Comware refers to a console port (in terms of Cisco)
+#ConfigRuleName:1.1.2 - Forbid Auxiliary Port
+#ConfigRuleParentName:1.1 Access control rules
+#ConfigRuleVersion: version.*
+#ConfigRuleInstance:aux
+#ConfigRuleContext:ComwareVTY
+#ConfigRuleType:Required
+#ConfigRuleMatch:<code> no exec$</code>
+#ConfigRuleImportance:10
+#ConfigRuleDescription:Forbid Auxiliary Port
+#ConfigRuleSelected:yes
+#ConfigRuleOptional:no
 
 ConfigRuleName:1.1.3 Forbid IP HTTP Server
 ConfigRuleParentName:1.1 Access control rules

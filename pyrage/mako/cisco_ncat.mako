@@ -700,12 +700,12 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
+ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
-switchport port-security maximum 1
+storm-control broadcast level 20
 
 ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
 ConfigRuleParentName:3. Data plane
