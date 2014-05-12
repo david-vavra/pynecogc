@@ -811,11 +811,11 @@ ConfigRuleParentName:2.1.2.1 NTP IPv4 peer ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['peer'],false)}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['peer'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict peer access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['peer'],true)}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['peer'],True)}</code>
 
 ConfigRuleName:2.1.2.1.2 NTP IPv4 peer ACL applied 
 ConfigRuleParentName:2.1.2.1 NTP IPv4 peer ACL 
@@ -839,11 +839,11 @@ ConfigRuleParentName:2.1.2.2 NTP IPv4 server ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['server'],false)}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['server'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict server access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['server'],false)}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['server'],False)}</code>
 
 ConfigRuleName:2.1.2.2.2 NTP IPv4 server ACL applied 
 ConfigRuleParentName:2.1.2.2 NTP IPv4 server ACL  
@@ -867,11 +867,11 @@ ConfigRuleParentName:2.1.2.3 NTP IPv4 query ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['query'],false)}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['query'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict query access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['query'],true)}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['query'],True)}</code>
 
 ConfigRuleName:2.1.2.3.2 NTP IPv4 query ACL applied 
 ConfigRuleParentName:2.1.2.3 NTP IPv4 query ACL 
@@ -895,11 +895,11 @@ ConfigRuleParentName:2.1.2.4 NTP IPv4 sync ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(ntp.acls['sync'],false)}</code>
+ConfigRuleMatch:<code>${printAcl(ntp.acls['sync'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict sync access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl(ntp.acls['sync'],true)}</code>
+ConfigRuleFix:<code>${printAcl(ntp.acls['sync'],True)}</code>
 
 ConfigRuleName:2.1.2.3.2 NTP IPv4 sync ACL applied 
 ConfigRuleParentName:2.1.2.4 NTP IPv4 sync ACL 
@@ -931,11 +931,11 @@ ConfigRuleParentName:2.1.3.1 NTP IPv6 peer ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['peer'],false)}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['peer'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict peer access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['peer'],true)}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['peer'],True)}</code>
 
 ConfigRuleName:2.1.3.1.2 NTP IPv6 peer ACL applied 
 ConfigRuleParentName:2.1.3.1 NTP IPv6 peer ACL 
@@ -959,11 +959,11 @@ ConfigRuleParentName:2.1.3.2 NTP IPv6 server ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['server'],false)}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['server'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict server access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['server'],true)}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['server'],True)}</code>
 
 ConfigRuleName:2.1.3.2.2 NTP IPv6 server ACL applied 
 ConfigRuleParentName:2.1.3.2 NTP IPv6 server ACL  
@@ -988,11 +988,11 @@ ConfigRuleParentName:2.1.3.3 NTP IPv6 query ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['query'],false)}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['query'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict query access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['query'],true)}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['query'],True)}</code>
 
 ConfigRuleName:2.1.3.3.2 NTP IPv6 query ACL applied 
 ConfigRuleParentName:2.1.3.3 NTP IPv6 query ACL 
@@ -1016,11 +1016,11 @@ ConfigRuleParentName:2.1.3.4 NTP IPv6 sync ACL
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl6(ntp.acls6['sync'],false)}</code>
+ConfigRuleMatch:<code>${printAcl6(ntp.acls6['sync'],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require an access-list to resctrict sync access defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>${printAcl6(ntp.acls6['sync'],true)}</code>
+ConfigRuleFix:<code>${printAcl6(ntp.acls6['sync'],True)}</code>
 
 ConfigRuleName:2.1.3.4.2 NTP IPv6 sync ACL applied 
 ConfigRuleParentName:2.1.3.4 NTP IPv6 sync ACL 
@@ -1304,11 +1304,11 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl,false)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl,False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:${printAcl(vty.acl,true)}
+ConfigRuleFix:${printAcl(vty.acl,True)}
 % endif 
 
 ConfigRuleName:1.1.1.4 Require SOME VTY ACL for Ipv4 applied
@@ -1346,11 +1346,11 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl6,false)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl6,False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:${printAcl(vty.acl6,true)}
+ConfigRuleFix:${printAcl(vty.acl6,True)}
 % endif
 
 ConfigRuleName:1.1.1.7 Require SOME VTY ACL for Ipv6 applied
@@ -1588,11 +1588,11 @@ ConfigRuleParentName:1.4.2 ACLs for SNMP communities
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']],false)}</code>
+ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Required acl for snmp community (Rule number 1.4.2.${loop.index+1}) to be defined
 ConfigRuleSelected:Yes
-ConfigRuleFix:${printAcl(snmp.acls[com['acl_id']],true)}
+ConfigRuleFix:${printAcl(snmp.acls[com['acl_id']],True)}
 % endif
 % endif 
 % endfor
