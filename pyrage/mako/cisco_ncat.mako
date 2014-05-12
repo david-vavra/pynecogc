@@ -724,7 +724,6 @@ ConfigRuleName:3.10 Require a proper configuration template for edge ports
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
-ConfigRuleInstance:.*
 ConfigRuleType:Required
 ConfigRuleMatch:<code>macro name \S+\
 # macro keywords $vlan $des\
@@ -743,7 +742,7 @@ spanning-tree bpduguard enable\
 no macro description\
 macro description desktop\
 description $des\
-no shutdown
+no shutdown\
 @</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require a proper configuration template for edge ports
@@ -765,7 +764,7 @@ spanning-tree bpduguard enable\
 no macro description\
 macro description desktop\
 description $des\
-no shutdown
+no shutdown\
 @
 
 ###################
