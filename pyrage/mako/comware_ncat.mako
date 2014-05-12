@@ -138,7 +138,7 @@ def getAclNameRegex(acl):
 		regex+=acl.number['comware']+'|' if 'comware' in acl.number else ''
 	except NameError, AttributeError:
 		return '(ERR)'
-	regex='(' + regex[:-1] ')'
+	regex='(' + regex[:-1]+ ')'
 		
 %>
 <%def name="makeRegexOfContextInstanceList(contextList)">\
@@ -224,7 +224,7 @@ ConfigRuleFix:<code>dhcp-snooping</code>
 ConfigRuleName:3.3.2 Require DHCP trusted ports
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(dhcpSnooping.trustedPorts)}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>dhcp-snooping trust</code>
@@ -259,7 +259,7 @@ ConfigRuleFix:<code>arp detection enable</code>
 ConfigRuleName:3.4.2 Require Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(arpInspection.trustedPorts)}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>arp detection trust</code>
@@ -272,7 +272,7 @@ arp detection trust
 ConfigRuleName:3.4.3 Forbid nondefined Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:${makeNegRegexOfContextInstanceList(arpInspection.trustedPorts)}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>arp detection trust</code>
@@ -286,7 +286,7 @@ arp detection trust
 ConfigRuleName:3.4.4 Forbid Arp inspection trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>arp detection trust</code>
 ConfigRuleImportance:10
@@ -319,7 +319,7 @@ ConfigRuleFix:<code>ip urpf ${uRPF.mode.lower()}</code>
 ConfigRuleName:3.6 Limit number of MAC addresses on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Required
 ConfigRuleMatch:<code>(port link-mode route)|(port link-type trunk)|(port-security max-mac-count (\d+))</code>
@@ -350,7 +350,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>(?!^interface \S+\n port link-mode (bridge|route)\n$).+</code>
@@ -364,7 +364,7 @@ shutdown
 ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
-ConfigRuleContext:IOSEthernetInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
 ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+$)</code>
@@ -502,7 +502,7 @@ ConfigClassParentName:2. Control plane
 ConfigRuleName:2.8.1 Require STP edge ports   
 ConfigRuleParentName:2. Control plane
 ConfigRuleVersion:version.*
-ConfigRuleContext:ComwareHwInterface
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleType:Required
 ConfigRuleMatch:<code>(port link-mode route)|(port link-type trunk)|(stp edged-port enable)</code>
 ConfigRuleImportance:10
