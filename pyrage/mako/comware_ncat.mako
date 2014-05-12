@@ -128,6 +128,18 @@ def getRegexOfList(values):
 
 def newline():
     return '\\\n'
+    
+def getAclNameRegex(acl):
+	if acl is None:
+		return '(ERR)'
+	regex='(ERR)'
+	try:
+		regex=acl.name+'|' if acl.name is not None else ''
+		regex+=acl.number['comware']+'|' if 'comware' in acl.number else ''
+	except NameError, AttributeError:
+		return '(ERR)'
+	regex='(' + regex[:-1] ')'
+		
 %>
 <%def name="makeRegexOfContextInstanceList(contextList)">\
 ${'('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+')'}\
@@ -480,22 +492,14 @@ ConfigRuleImportance:10
 ConfigRuleDescription:VTY allowed input transport
 ConfigRuleSelected:Yes
 
-% if device.ip4:
-<%
-vty4_aclName="ERR_ACL_NOT_DEFINED"
-if vty.acl is not None:
-        if vty.acl.name is not None:
-                vty4_aclName=vty.acl.name
-        elif 'comware' in vty.acl.number:
-                vty4_aclName=vty.acl.number['comware']
-%>
+% if device.ip4 and vty.acl is not None:
 ConfigRuleName:1.1.1.2 Require VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareVTY
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>^ acl ${vty4_aclName} inbound$</code>
+ConfigRuleMatch:<code>^ acl ${getAclNameRegex(vty.acl)} inbound$</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 applied
 ConfigRuleSelected:Yes
@@ -510,29 +514,32 @@ ConfigRuleMatch:<code>${printAcl(vty.acl)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
-% endif 
-
-% if device.ip6:
-<%
-vty6_aclName="ERR_ACL_NOT_DEFINED"
-if vty.acl6 is not None:
-	if vty.acl6.name is not None:
-		vty6_aclName=vty.acl.name
-	elif 'comware' in vty.acl6.number:
-		vty6_aclName=vty.acl6.number['comware']
-%>
-ConfigRuleName:1.1.1.4 Require VTY ACL for Ipv6 applied
+% endif
+ConfigRuleName:1.1.1.4 Require SOME VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareVTY
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ipv6 access-class ${vty6_aclName}</code>
+ConfigRuleMatch:<code>^ acl \S+ inbound</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require SOME VTY ACL for Ipv4 applied
+ConfigRuleSelected:Yes
+
+
+% if device.ip6 and vty.acl6 is not None:
+ConfigRuleName:1.1.1.5 Require VTY ACL for Ipv6 applied
+ConfigRuleParentName:1.1.1 Limit VTY remote access
+ConfigRuleVersion: version.*
+ConfigRuleContext:ComwareVTY
+ConfigRuleInstance:vty.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>acl ipv6 ${getAclNameRegex(vty.acl6)} inbound</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
 
-ConfigRuleName:1.1.1.5 Require VTY ACL for Ipv6 defined
+ConfigRuleName:1.1.1.6 Require VTY ACL for Ipv6 defined
 ConfigRuleParentName:1.1.1 Limit VTY remote access
 ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareGlobal
@@ -543,6 +550,16 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
 % endif 
+ConfigRuleName:1.1.1.7 Require SOME VTY ACL for Ipv6 applied
+ConfigRuleParentName:1.1.1 Limit VTY remote access
+ConfigRuleVersion: version.*
+ConfigRuleContext:ComwareVTY
+ConfigRuleInstance:vty.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>^ acl ipv6 \S+ inbound</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require SOME VTY ACL for Ipv6 applied
+ConfigRuleSelected:Yes
 % endif
 
 ConfigRuleName:1.1.2 - Forbid Auxiliary Port
