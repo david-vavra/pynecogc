@@ -1,21 +1,23 @@
+<%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
+
 # Tacacs is hardcoded
 # TODO: 
 #		snmp
 #		testing
 
 <%!
-def printComwareAcl(acl):
-    def _getAclType(number):
-        try:
-            if int(number) in range(2000,2999):
-                return 'standard'
-            elif int(number) in range(3000,3999):
-                return 'extended'
-            else:
-                return False
-        except ValueError:
+def getAclType(number):
+    try:
+        if int(number) in range(2000,2999):
+            return 'standard'
+        elif int(number) in range(3000,3999):
+            return 'extended'
+        else:
             return False
+    except ValueError:
+        return False
 
+def printAcl(acl):
     if acl is None:
         return "# UNABLE TO PRINT ACL"
 
@@ -27,27 +29,22 @@ def printComwareAcl(acl):
     output=''
     aclNum=''
 
-    if 'comware' not in acl.number or not _getAclType(acl.number['comware']):
-            return "# UNABLE TO PRINT ACL: '{0}'".format(acl.id)
+    if 'comware' not in acl.number or not getAclType(acl.number['comware']):
+        return "# UNABLE TO PRINT ACL: '{0}'".format(acl.id)
+
     aclNum=acl.number['comware']
 
-    """
-    Decide whether given acl could be printed in comware syntax.
-    """
+    """ Decide whether given acl could be printed in comware syntax. """
     for id,rule in acl.rules.items():
-        if _getAclType(aclNum)=='standard' and ('protocol' in rule or \
-            'source_port' in rule or\
-            'destination_port' in rule):
+        if getAclType(aclNum)=='standard' and (('protocol' in rule or 'source_port' in rule) or 'destination_port' in rule):
             """
             It is not possible for standard (2000-2999) acl to hold such attributes.
             """
             return "# UNABLE TO PRINT ACL: '{0}'".format(acl.id)
 
-    if acl.name not None:
-        output+="acl number {num} name {name}\\\n".format(
-            num=aclNum,
-            name=acl.name
-        )
+    if acl.name is not None:
+        """ pokus """ 
+        output+="acl number {num} name {name}\\\n".format(num=aclNum,name=acl.name)
     else:
         output+="acl number {num}\\\n".format(
             num=aclNum
@@ -83,7 +80,7 @@ def printComwareAcl(acl):
         # build a proper source/dest port def.syntax
         lineArgs['source_port']=('eq '+lineArgs['source_port']) if len(lineArgs['source_port']) else lineArgs['source_port']
         lineArgs['destination_port']=('eq '+lineArgs['destination_port']) if len(lineArgs['destination_port']) else lineArgs['destination_port']
-        if _getAclType(aclNum) != 'standard':
+        if getAclType(aclNum) != 'standard':
             lineArgs['destination_mask'] = "" if len(lineArgs['source_mask'])==0 else buildNetMask(lineArgs['destination_mask'])
         lineArgs['log']='logging' if lineArgs['log']==True else ''
         output += (lineSyntax % lineArgs).rstrip() + '\\\n'
@@ -99,7 +96,45 @@ def printComwareAcl(acl):
     # strip newline at the end
     return output[:-2]
 
+def makeListOfVlanRange(vlanRange):
+    if not vlanRange:
+        return ['ERR']
+    listOfRanges=vlanRange.split(',')
+    vlanList=[]
+    for r in listOfRanges:
+        if '-' not in r:
+            # test whether given ranges are in fact vlans (i.e. vlanRange was sth like '1,2,3,10')
+            vlanList.append(int(r))
+        else:
+            r=r.split('-')
+            if len(r)>2:
+                # '1-2-10' -> not valid vlanRange
+                return []
+            try:
+                vlanList+=range(int(r[0]),int(r[1])+1)
+            except ValueError:
+                return ['ERR']
+    vlanList.sort()
+    return list(set(vlanList))
+
+from itertools import permutations
+
+def getRegexOfList(values):
+    permut=(list(permutations(values)))
+    resultingRegex=''
+    for p in permut:
+        resultingRegex+='('+(''.join(list(p)))+')|'
+    return resultingRegex[:-1]
+
+def newline():
+    return '\\\n'
 %>
+<%def name="makeRegexOfContextInstanceList(contextList)">\
+${'('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+')'}\
+</%def>
+<%def name="makeNegRegexOfContextInstanceList(contextList)">\
+${'(?!('+('|'.join(list(map(lambda x: '^'+str(x)+'$',contextList))))+').+)'}\
+</%def>
 
 # Definition of classes 
 ConfigClassName:Selectable
@@ -124,25 +159,25 @@ ConfigDataDefaultValue:None
 ConfigDataHowToGet:None
 ConfigDataDescription:None
 
-ConfigClassName:ICS Level 2 
-ConfigClassDescription:Root class for all ICS security requirements of level 2
+ConfigClassName:ICS 
+ConfigClassDescription:Root class for all ICS security requirements
 ConfigClassSelected:Yes
 ConfigClassParentName:Selectable
 
 ConfigClassName:1. Management plane 
 ConfigClassDescription:Management plane root class
 ConfigClassSelected:Yes
-ConfigClassParentName:ICS Level 2 
+ConfigClassParentName:ICS 
 
 ConfigClassName:2. Control plane 
 ConfigClassDescription:Control plane root class
 ConfigClassSelected:Yes
-ConfigClassParentName:ICS Level 2 
+ConfigClassParentName:ICS 
 
 ConfigClassName:3. Data plane 
 ConfigClassDescription:Data plane root class
 ConfigClassSelected:Yes
-ConfigClassParentName:ICS Level 2 
+ConfigClassParentName:ICS 
 
 ConfigRuleName:3.2 Forbid IP directed broadcast
 ConfigRuleParentName:3. Data plane
@@ -173,7 +208,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:<code>dhcp-snooping</code>
 
 
-% if dhcpSnooping.trustedPorts not None:
+% if dhcpSnooping.trustedPorts is not None:
 ConfigRuleName:3.3.2 Require DHCP trusted ports
 ConfigRuleParentName:3.3 DHCP snooping
 ConfigRuleVersion: version.*
@@ -189,10 +224,8 @@ ip dhcp-snooping trust
 
 % endif
 % endif
-#}}}
 
-{{{# Arp inspection
-% if arpInspection:
+% if arpInspection and arpInspection.vlanRange is not None:
 ConfigClassName:3.4 Arp inspection 
 ConfigClassDescription:Arp inspection related rules
 ConfigClassSelected:Yes
@@ -202,8 +235,7 @@ ConfigRuleName:3.4.1 Require arp inspection enabled
 ConfigRuleParentName:3.4 Arp inspection 
 ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareVlanInterface
-ConfigRuleInstance:${makeRegexOfContextInstanceList(
-							makeListOfVlanRange(arpInspection.vlanRange))}
+ConfigRuleInstance:${makeRegexOfContextInstanceList(makeListOfVlanRange(arpInspection.vlanRange))}
 ConfigRuleType:Required
 ConfigRuleMatch:<code>arp detection enable</code>
 ConfigRuleImportance:10
@@ -211,7 +243,7 @@ ConfigRuleDescription:Require Arp inspection enabled
 ConfigRuleSelected:Yes
 ConfigRuleFix:<code>arp detection enable</code>
 
-% if arpInspection.trustedPorts not None:
+% if arpInspection.trustedPorts is not None:
 ConfigRuleName:3.4.2 Require Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion: version.*
@@ -225,12 +257,24 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 arp detection trust
 
-% else:
-ConfigRuleName:3.4.3 Forbid Arp trusted ports
+ConfigRuleName:3.4.3 Forbid nondefined Arp trusted ports
 ConfigRuleParentName:3.4 Arp inspection
 ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareHwInterface
-ConfigRuleInstance:${makeRegexOfContextInstanceList(arpInspection.trustedPorts)}
+ConfigRuleInstance:${makeNegRegexOfContextInstanceList(arpInspection.trustedPorts)}
+ConfigRuleType:Required
+ConfigRuleMatch:<code>arp detection trust</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require specific ports to be configured as Arp snooping trusted ports and no other
+ConfigRuleSelected:Yes
+ConfigRuleFix:interface INSTANCE${"\\"}
+arp detection trust
+
+% else:
+ConfigRuleName:3.4.4 Forbid Arp inspection trusted ports
+ConfigRuleParentName:3.4 Arp inspection
+ConfigRuleVersion: version.*
+ConfigRuleContext:ComwareHwInterface
 ConfigRuleType:Forbidden
 ConfigRuleMatch:<code>arp detection trust</code>
 ConfigRuleImportance:10
@@ -241,7 +285,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{ URPF
-% if uRPF is not None and device.l3 and uRPF.defaultMode is not None:
+% if uRPF is not None and device.l3 and uRPF.mode is not None:
 ConfigClassName:3.5 URPF
 ConfigClassDescription:URPF related rules
 ConfigClassSelected:Yes
@@ -252,11 +296,11 @@ ConfigRuleParentName:3.5 URPF
 ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>ip urpf ${uRPF.defaultMode.lower()}</code>
+ConfigRuleMatch:<code>ip urpf ${uRPF.mode.lower()}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require chosen default urpf mode on every interface
 ConfigRuleSelected:Yes
-ConfigRuleFix:<code>ip urpf ${uRPF.defaultMode.lower()}</code>
+ConfigRuleFix:<code>ip urpf ${uRPF.mode.lower()}</code>
 % endif
 #}}}
 
@@ -273,7 +317,7 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 port-security max-mac-count 1
 
-% if ipSourceGuard is not None and len(makeListOfVlanRange(ipSourceGuard.vlanRange))>0:
+% if ipSourceGuard is not None and ipSourceGuard.vlanRange is not None:
 ConfigRuleName:3.7 Require IP source guard to be enabled on given interfaces
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion: version.*
@@ -294,7 +338,7 @@ ConfigRuleFix:interface INSTANCE${"\\"}
 ###################
 #{{{ Control plane
 ###################
-% if ntp is not None and ntp.hosts not None:
+% if ntp is not None and ntp.hosts is not None:
 ConfigClassName:2.1 NTP 
 ConfigClassDescription:NTP related rules
 ConfigClassSelected:Yes
@@ -321,7 +365,7 @@ ConfigRuleFix:${ntpServersRegex}
 % endif 
 
 #{{{ SYSLOG TODO add severity and facility
-% if syslog is not None and syslog.hosts not None:
+% if syslog is not None and syslog.hosts is not None:
 ConfigClassName:2.2 Syslog
 ConfigClassDescription:Syslog events logging related rules 
 ConfigClassSelected:Yes
@@ -330,7 +374,7 @@ ConfigClassParentName:2. Control plane
 syslogHosts=""
 for name,host in syslog.hosts.items():
 	syslogHosts+="info-center loghost {0}\\\n".format(host)
-syslogHosts=syslogHosts[:-1]
+syslogHosts=syslogHosts[:-2]
 %>
 ConfigRuleName:2.2.1 Syslog logging 
 ConfigRuleParentName:2.2 Syslog
@@ -345,7 +389,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{BGP auth
-% if bgp:
+% if device.l3:
 ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
 ConfigClassSelected:Yes
@@ -376,7 +420,7 @@ ConfigRuleSelected:Yes
 #}}}
 
 #{{{OSPF auth
-% if ospf:
+% if device.l3:
 ConfigClassName:2.4 OSPF
 ConfigClassDescription:OSPF related rules
 ConfigClassSelected:Yes
@@ -419,7 +463,7 @@ ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
 
 #{{{ VTY
-% if vty and vty.protocols not None:
+% if vty and vty.protocols is not None:
 ConfigClassName:1.1.1 Limit VTY remote access 
 ConfigClassDescription:Limit remote access methods
 ConfigClassSelected:Yes
@@ -439,11 +483,11 @@ ConfigRuleSelected:Yes
 % if device.ip4:
 <%
 vty4_aclName="ERR_ACL_NOT_DEFINED"
-if vty.acl_v4 is not None:
-	if 'comware' in vty.acl_v4.name:
-		vty4_aclName=vty.acl_v4.name['comware']
-	elif 'generic' in vty.acl_v4.name:
-		vty4_aclName=vty.acl_v4.name['generic']
+if vty.acl is not None:
+        if vty.acl.name is not None:
+                vty4_aclName=vty.acl.name
+        elif 'comware' in vty.acl.number:
+                vty4_aclName=vty.acl.number['comware']
 %>
 ConfigRuleName:1.1.1.2 Require VTY ACL for Ipv4 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
@@ -462,7 +506,7 @@ ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareGlobal
 ConfigRuleInstance:
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl_v4)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 defined
 ConfigRuleSelected:Yes
@@ -471,11 +515,11 @@ ConfigRuleSelected:Yes
 % if device.ip6:
 <%
 vty6_aclName="ERR_ACL_NOT_DEFINED"
-if vty.acl_v6 is not None:
-	if 'comware' in vty.acl_v6.name:
-		vty4_aclName=vty.acl_v4.name['comware']
-	elif 'generic' in vty.acl_v6.name:
-		vty4_aclName=vty.acl_v6.name['generic']
+if vty.acl6 is not None:
+	if vty.acl6.name is not None:
+		vty6_aclName=vty.acl.name
+	elif 'comware' in vty.acl6.number:
+		vty6_aclName=vty.acl6.number['comware']
 %>
 ConfigRuleName:1.1.1.4 Require VTY ACL for Ipv6 applied
 ConfigRuleParentName:1.1.1 Limit VTY remote access
@@ -494,15 +538,13 @@ ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareGlobal
 ConfigRuleInstance:vty.*
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(vty.acl_v6)}</code>
+ConfigRuleMatch:<code>${printAcl(vty.acl6)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 defined
 ConfigRuleSelected:Yes
 % endif 
-#}}}
 % endif
 
-?????????
 ConfigRuleName:1.1.2 - Forbid Auxiliary Port
 ConfigRuleParentName:1.1 Access control rules
 ConfigRuleVersion: version.*
@@ -614,7 +656,7 @@ ConfigRuleVersion: version.*
 ConfigRuleContext:AAA_HWTACACS
 ConfigRuleInstance:hwtac
 ConfigRuleType:Required
-ConfigRuleMatch:<code> primary authentication 147.251.7.17</code>
+ConfigRuleMatch:<code>primary authentication 147.251.7.17</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require tacacs authentication server defined
 ConfigRuleSelected:Yes
@@ -625,7 +667,7 @@ ConfigRuleVersion: version.*
 ConfigRuleContext:AAA_Domain
 ConfigRuleInstance:tacacs
 ConfigRuleType:Required
-ConfigRuleMatch:<code>  authentication default hwtacacs-scheme hwtac local</code>
+ConfigRuleMatch:<code>authentication default hwtacacs-scheme hwtac local</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require tacacs authentication methods list defined 
 ConfigRuleSelected:Yes
@@ -637,6 +679,4 @@ ConfigClassName:1.4 SNMP
 ConfigClassDescription:SNMP related rules 
 ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
-
-# TODO
 % endif 
