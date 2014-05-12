@@ -700,7 +700,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
 ConfigRuleInstance:^(?!.+\.).+
 ConfigRuleType:Required
-ConfigRuleMatch:<code>((no)* ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+)</code>
+ConfigRuleMatch:<code>((no)? ip address.*)|(shutdown)|(switchport mode trunk)|(storm-control broadcast level \d+)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
