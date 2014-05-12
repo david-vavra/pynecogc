@@ -726,7 +726,7 @@ ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
 ConfigRuleMatch:<code>macro name \S+\
-# macro keywords $vlan $des\
+. macro keywords $vlan $des\
 switchport access vlan $vlan\
 switchport mode access\
 switchport port-security\
@@ -1365,6 +1365,7 @@ ConfigRuleDescription:Require SOME VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
 ConfigRuleFix:line INSTANCE${"\\"}
 access-class FIXME_DEFINE_ACL in
+% endif 
 % endif 
 
 ConfigRuleName:1.1.2 - Forbid Auxiliary Port
