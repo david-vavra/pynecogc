@@ -725,46 +725,46 @@ ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>macro name \S+\
-. macro keywords $vlan $des\
-switchport access vlan $vlan\
-switchport mode access\
-switchport port-security\
-switchport port-security maximum 1\
-switchport port-security violation restrict\
-switchport port-security aging time 2\
-switchport port-security aging type inactivity\
-storm-control broadcast level 20\
-no cdp enable\
-load-interval 30\
-spanning-tree portfast\
-spanning-tree bpduguard enable\
-no macro description\
-macro description desktop\
-description $des\
-no shutdown\
+ConfigRuleMatch:<code>macro name \S+${"\\"}
+. macro keywords $vlan $des${"\\"}
+switchport access vlan $vlan${"\\"}
+switchport mode access${"\\"}
+switchport port-security${"\\"}
+switchport port-security maximum 1${"\\"}
+switchport port-security violation restrict${"\\"}
+switchport port-security aging time 2${"\\"}
+switchport port-security aging type inactivity${"\\"}
+storm-control broadcast level 20${"\\"}
+no cdp enable${"\\"}
+load-interval 30${"\\"}
+spanning-tree portfast${"\\"}
+spanning-tree bpduguard enable${"\\"}
+no macro description${"\\"}
+macro description desktop${"\\"}
+description $des${"\\"}
+no shutdown${"\\"}
 @</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require a proper configuration template for edge ports
 ConfigRuleSelected:Yes
-ConfigRuleFix:macro name desktop\
-# macro keywords $vlan $des\
-switchport access vlan $vlan\
-switchport mode access\
-switchport port-security\
-switchport port-security maximum 1\
-switchport port-security violation restrict\
-switchport port-security aging time 2\
-switchport port-security aging type inactivity\
-storm-control broadcast level 20\
-no cdp enable\
-load-interval 30\
-spanning-tree portfast\
-spanning-tree bpduguard enable\
-no macro description\
-macro description desktop\
-description $des\
-no shutdown\
+ConfigRuleFix:macro name desktop${"\\"}
+# macro keywords $vlan $des${"\\"}
+switchport access vlan $vlan${"\\"}
+switchport mode access${"\\"}
+switchport port-security${"\\"}
+switchport port-security maximum 1${"\\"}
+switchport port-security violation restrict${"\\"}
+switchport port-security aging time 2${"\\"}
+switchport port-security aging type inactivity${"\\"}
+storm-control broadcast level 20${"\\"}
+no cdp enable${"\\"}
+load-interval 30${"\\"}
+spanning-tree portfast${"\\"}
+spanning-tree bpduguard enable${"\\"}
+no macro description${"\\"}
+macro description desktop${"\\"}
+description $des${"\\"}
+no shutdown${"\\"}
 @
 
 ###################
@@ -1588,7 +1588,7 @@ ConfigRuleParentName:1.4.2 ACLs for SNMP communities
 ConfigRuleVersion:version 1[125]\.*
 ConfigRuleContext:IOSGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']],false)}</code>
+ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']],False)}</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Required acl for snmp community (Rule number 1.4.2.${loop.index+1}) to be defined
 ConfigRuleSelected:Yes

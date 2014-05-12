@@ -70,6 +70,7 @@ def main():
             f.close()
         except Exception as e:
             logger.log('error',dev+':'+ e.message)
+            raise SystemExit(3)
 
     """
      launch ncat for every device
