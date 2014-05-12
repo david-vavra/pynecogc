@@ -720,6 +720,54 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 shutdown
 
+ConfigRuleName:3.10 Require a proper configuration template for edge ports
+ConfigRuleParentName:3. Data plane
+ConfigRuleVersion:version 1[0125]\.*
+ConfigRuleContext:IOSGlobal
+ConfigRuleInstance:.*
+ConfigRuleType:Required
+ConfigRuleMatch:<code>macro name \S+\
+# macro keywords $vlan $des\
+switchport access vlan $vlan\
+switchport mode access\
+switchport port-security\
+switchport port-security maximum 1\
+switchport port-security violation restrict\
+switchport port-security aging time 2\
+switchport port-security aging type inactivity\
+storm-control broadcast level 20\
+no cdp enable\
+load-interval 30\
+spanning-tree portfast\
+spanning-tree bpduguard enable\
+no macro description\
+macro description desktop\
+description $des\
+no shutdown
+@</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Require a proper configuration template for edge ports
+ConfigRuleSelected:Yes
+ConfigRuleFix:macro name desktop\
+# macro keywords $vlan $des\
+switchport access vlan $vlan\
+switchport mode access\
+switchport port-security\
+switchport port-security maximum 1\
+switchport port-security violation restrict\
+switchport port-security aging time 2\
+switchport port-security aging type inactivity\
+storm-control broadcast level 20\
+no cdp enable\
+load-interval 30\
+spanning-tree portfast\
+spanning-tree bpduguard enable\
+no macro description\
+macro description desktop\
+description $des\
+no shutdown
+@
+
 ###################
 # Control plane
 ###################
