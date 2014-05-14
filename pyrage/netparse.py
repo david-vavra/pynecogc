@@ -11,7 +11,7 @@ from yapsy import logging
 
 import os
 
-class NetworkParser():
+class XML_NetworkParser():
 
     def __init__(self,logger,definitionsFile):
         self.logger = logger

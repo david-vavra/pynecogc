@@ -12,7 +12,7 @@ import sys
 import argparse
 
 from pyrage.netparse import Device
-from pyrage.netparse import NetworkParser
+from pyrage.netparse import XMLNetworkParser
 from pyrage.logger import Logger
 
 from pyrage.utils import InvalidData
@@ -34,7 +34,7 @@ def main():
     """
      try to parse xml file
     """
-    parser = NetworkParser(logger,inputArgs.networkDef)
+    parser = XMLNetworkParser(logger,inputArgs.networkDef)
     deviceInstances={}
     for dev in inputArgs.device:
         deviceInstances[dev]=Device(dev)
