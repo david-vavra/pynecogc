@@ -26,6 +26,6 @@ setup(name='Pyrage',
                                                    'pyrage/mako/cisco_ncat.mako',
                                                    'pyrage/mako/comware_ncat.mako',
                                                    'pyrage/mako/comware_genconf.mako']),
-                    ('/usr/local/bin/', ['ncat_xmlconfig','pyge'])
+                    ('/usr/local/bin/', ['ncat_xmlconfig','pynecog'])
                   ]
      )
