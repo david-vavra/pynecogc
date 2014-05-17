@@ -5,12 +5,10 @@ from yapsy.IPlugin import IPlugin
 from pyrage.utils import ErrRequiredData
 from pyrage.utils import ErrOptionalData
 
-import re
-
-
 class SNMP(IPlugin):
     def __init__(self):
         self.communities = None
+        """ A dictionary of traps {tag:list}"""
         self.traps = None
         self.trap_hosts = None
         self.acls = {}
@@ -87,7 +85,8 @@ class SNMP(IPlugin):
                 raise ErrRequiredData(":snmp:Invalid group ('{0}') security model specified: '{1}'".format(name,secModel))
             if version=='3' and secLevel.lower() not in ['noauth','auth','priv']:
                 raise ErrOptionalData(":snmp:Invalid group ('{0}') authentication level specified: '{1}'".format(name,authLevel))
-            group={'version':version,
+            group={
+                   'version':version,
                    'secLevel':secLevel,
                    'aclId':aclId,
                    'views':{'read':None,'write':None}
@@ -99,7 +98,7 @@ class SNMP(IPlugin):
             raise ErrRequiredData(":snmp:Invalid view ('{0}') privilege specified: {'1'}".format(viewName,viewPrivilege))
         if groupName not in self.groups:
             raise ErrRequiredData(":snmp:Can't assign view with nonexisting group: '{0}'".format(groupName))
-        self.groups[groupName]['views'][viewPrivilege]=viewName
+        self.groups[groupName]['views'][viewPrivilege.lower()]=viewName
 
     def addUser(self,userName,group,aclId):
         if self.users is None:

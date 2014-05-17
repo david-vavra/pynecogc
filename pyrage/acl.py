@@ -11,7 +11,7 @@ class ACL():
     network - a xml ElementTree instance which contains the acls
     """
     def __init__(self,network):
-        self.context=network
+        self.contextToParse=network
         self.acl4={}
         self.acl6={}
 
@@ -30,7 +30,7 @@ class ACL():
         if IPver==4:
             if aclId in self.acl4:
                 return self.acl4[aclId]
-            for acl in self.context.iter('aclv4'):
+            for acl in self.contextToParse.iter('aclv4'):
                 if 'id' in acl.attrib:
                     if acl.attrib['id']==aclId:
                         self.acl4[aclId]=ACLv4(aclId)
@@ -39,7 +39,7 @@ class ACL():
         else:
             if aclId in self.acl6:
                 return self.acl6[aclId]
-            for acl in self.context.iter('aclv6'):
+            for acl in self.contextToParse.iter('aclv6'):
                 if 'id' in acl.attrib:
                     if acl.attrib['id']==aclId:
                         self.acl6[aclId]=ACLv6(aclId)
