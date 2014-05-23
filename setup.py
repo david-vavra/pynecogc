@@ -27,5 +27,6 @@ setup(name='Pyrage',
                                                    'pyrage/mako/comware_ncat.mako',
                                                    'pyrage/mako/comware_genconf.mako']),
                     ('/usr/local/bin/', ['ncat_xmlconfig','pynecog'])
-                  ]
+                  ],
+      install_requires=["Mako ==0.9.1","Yapsy ==1.10.223, ==1.10.323"]
      )
