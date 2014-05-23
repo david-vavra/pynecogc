@@ -37,8 +37,7 @@ def main():
     """
     Handle input args
     """
-    argParser=argparse.ArgumentParser(description="Wrapper for router audit tool ncat.")
-    #argParser.add_argument('-t','--configType',help="Chooses the directory with configuration files for given audit among the others in ncat config dir")
+    argParser=argparse.ArgumentParser(description="Router audit tool rulebase customizer.")
     argParser.add_argument('-r','--rulesFile_template', help="Name of the mako template file in directory chosen with the -t option")
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device_cfg',nargs='+')
@@ -47,7 +46,7 @@ def main():
     logger = Logger('warning')
 
     """
-     try to parse xml file
+     Try to parse specified XML file.
     """
     parser = XML_NetworkParser(logger,inputArgs.networkDef)
     deviceInstances={}
@@ -58,19 +57,19 @@ def main():
         except InvalidData as e:
             """ remove incorrectly parsed device """
             #deviceInstances.pop(dev)
-            logger.log('error',dev+str(e))
+            logger.log('critical',dev+str(e))
             raise SystemExit(1)
 
 
     """
-     generate ncat rules for every device
+     Generate ncat rules for every specified device.
     """
-    #lookup=TemplateLookup(directories=['/home/sev/thesis/pyrage/mako'])
+
     try:
         mkt=Template(open(inputArgs.rulesFile_template).read(),
                      input_encoding='utf-8',
                      output_encoding='utf-8',
-                     default_filters=['decode.utf8'],)#,lookup=lookup,strict_undefined=True)
+                     default_filters=['decode.utf8'],strict_undefined=True)
     except Exception as e:
         logger.log('critical', 'Unable to open template file! {0}'.format(str(e)))
         raise SystemExit(2)
@@ -83,34 +82,9 @@ def main():
                 **instance.instances))
             f.close()
         except Exception as e:
-            logger.log('error',dev+':'+ e.message)
+            logger.log('critical',dev+':'+ e.message)
             raise SystemExit(3)
 
-    """
-     launch ncat for every device
-
-    ncatOutputFilesString=[]
-    allRules=""
-    for dev,instance in deviceInstances.items():
-        try:
-            subprocess.check_call(['ncat',
-                         '-t={0}'.format(inputArgs.configType),
-                         '-r={0}'.format(dev+'.rules'),
-                         dev])
-        except subprocess.CalledProcessError as e:
-            raise SystemExit(e.returncode)
-        ncatOutputFilesString.append(dev+'.ncat_out.txt')
-        allRules+=dev+'.rules,'
-
-    try:
-        subprocess.check_call(['ncat_report',
-                         '-t={0}'.format(inputArgs.configType),
-                         '-r={0}'.format(allRules[:-1]),
-                         ]+(ncatOutputFilesString))
-
-    except subprocess.CalledProcessError as e:
-            raise SystemExit(e.returncode)
-    """
 
 if __name__=="__main__":
     main()

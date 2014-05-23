@@ -36,7 +36,7 @@ def main():
     """
     Handle input args
     """
-    argParser=argparse.ArgumentParser(description="Generates network configuration from mako templates and parameters stored in xml")
+    argParser=argparse.ArgumentParser(description="Generates network configuration from mako templates and attributes parsed from XML by Pyrage library.")
     argParser.add_argument('-t','--template',help="A path for Mako template")
     argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
     argParser.add_argument('device',nargs='+')
@@ -45,7 +45,7 @@ def main():
     logger = Logger('warning')
 
     """
-     try to parse xml file
+     Try to parse specified XML file.
     """
     parser = XML_NetworkParser(logger,inputArgs.networkDef)
     deviceInstances={}
@@ -54,7 +54,7 @@ def main():
         try:
             parser.parseDevice(deviceInstances[dev])
         except InvalidData as e:
-            logger.log('error',dev+e.msg)
+            logger.log('critical',dev+e.msg)
             raise SystemExit(1)
     """
     Try to open open template
@@ -69,7 +69,7 @@ def main():
                 device=instance,
                 **instance.instances))
         except:
-            print (exceptions.text_error_template().render())
+            logger.log ('critical',exceptions.text_error_template().render())
         f.close()
         sys.stdout.write("Generated configuration saved in file '{0}'.\n".format(dev))
 
