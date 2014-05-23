@@ -24,11 +24,7 @@ from yapsy.IPlugin import IPlugin
 
 from pyrage.utils import ErrRequiredData
 
-"""
-TODO
-aaa method list, add id attrbute. because name could be same for different lists. Add name to subelements
-aaa method list, add apply_on? line,enable,con
-"""
+
 class AAA(IPlugin):
     def __init__(self):
         self.hosts = {}
@@ -80,7 +76,7 @@ class AAA(IPlugin):
 
     def parseContext(self,contextToParse,*args):
 
-        for aaa_def in contextToParse.iter('aaa'):
+        for aaa_def in contextToParse.iter('aaa_authentication'):
             for group in contextToParse.iter('aaa_group'):
                 self.addGroup(
                         group.attrib['id'],
