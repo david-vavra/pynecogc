@@ -33,15 +33,16 @@ import os
 class XML_NetworkParser():
 
     def __init__(self,logger,definitionsFile):
+
         self.logger = logger
 
         """
-         instance of currently parsed device, so it's attributes could be accessed
-         within the context of methods called by parseDevice method.
+         Instance of currently parsed device, kept in order to its attributes be
+         accessible within the context of methods called by parseDevice method.
         """
         self.currentlyParsedDevice=None
 
-        """ load file with devices,groups,acls"""
+        """ load XML description of the network (devices, acls, groups) """
         try:
             self.network = xmlet.parse(definitionsFile)
         except IOError as e:
@@ -57,12 +58,18 @@ class XML_NetworkParser():
             )
             raise SystemExit(1)
 
-        self.devicesXml={}
+        self.devicesXml=None
         for devices in self.network.iter('devices'):
             self.devicesXml=devices
-        self.groupsXml={}
+        self.groupsXml=None
         for groups in self.network.iter('groups'):
             self.groupsXml=groups
+
+        if self.devicesXml is None or self.groupsXml is None:
+            self.logger.log(
+                'critical',"Exiting! Unable to parse file '{f}': Schema of the file is probably not valid.".format(
+                    f=definitionsFile)
+            )
 
         """ Initialize container for acls"""
         self.acls = ACL(self.network)
@@ -79,9 +86,8 @@ class XML_NetworkParser():
                 deviceDef = device
                 break
         if deviceDef is None:
-            self.logger.log('error',"Device '{dev}' not found in xml file.".format(dev=dev.fqdn))
+            self.logger.log('error',"Device '{dev}' not found in the XML file.".format(dev=dev.fqdn))
             return
-
         
         if deviceDef.find('vendor') is not None:
             dev.vendor = deviceDef.find('vendor').text
@@ -93,18 +99,21 @@ class XML_NetworkParser():
             dev.l3=True if deviceDef.find('l3').text.lower()=='true' else False
         if deviceDef.find('ipv6') is not None:
             dev.ip6=True if deviceDef.find('ipv6').text.lower()=='true' else False
-        """ todo, possibly add ipv4 tag into devices.xml """
+        """ TODO, possibly add ipv4 tag into devices.xml """
         dev.ip4=True
 
         dev.groups=deviceDef.attrib['groups'].split(',') if 'groups' in deviceDef.attrib else []
 
         for member in dev.groups:
-
             for group in self.groupsXml.iter('group'):
                 if group.attrib['id'] == member:
+                    """ parse attributes of the given group """
                     self._parseContext(group,deviceInstances)
 
-        """ parse the particular device's parameters """
+        """ parse attributes defined within the definition of a device,
+         possibly overrides previously parsed data.
+        See implementation of the particular plugin to clarify the inheritance alg.
+        """
         self._parseContext(deviceDef,deviceInstances)
 
         self.currentlyParsedDevice=None
@@ -112,11 +121,11 @@ class XML_NetworkParser():
 
     def _parseContext(self,context,instances):
         """
-            parses given group and writes it's parameters in object variable.
+            Parses given context and keeps its parameters as the particular
+            instance attributes.
             Later calls of this or other methods may overwrite those.
 
-            Rules signifancy:
-            MEMBER_GROUP (in as-in-file order) < DEVICE
+            MEMBER_GROUP attributes (in as-in-file order) < DEVICE attributes
         """
         for name,instance in instances.items():
             try:
@@ -129,6 +138,9 @@ class XML_NetworkParser():
         return
 
 class Device():
+    """ Class representing the particular device and its attributes (plugins/modules are
+    kept in the dictionary).
+    """
     def __init__(self,deviceName):
         self.instances = copy.deepcopy(instances)
 
@@ -142,6 +154,7 @@ class Device():
         self.l3=False
 
 
+""" load the plugins """
 PLUGIN_PATH=os.path.dirname(os.path.realpath(__file__)).split('/')
 PLUGIN_PATH='/'.join(PLUGIN_PATH[:-1])+'/pyrage/modules'
 

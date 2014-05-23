@@ -35,8 +35,8 @@ class Logger():
                self.loggingSeverity else 0
 
     """
-        Print given message on stderr output, if its severity is equal or less
-        than chosen log level.
+        Print given message to stderr output if its severity is equal or less
+        than the chosen log level.
     """
     def log(self,msgSeverity,message):
         if msgSeverity not in self.loggingSeverity:

@@ -38,35 +38,36 @@ class ACL():
 
     Arguments:
     aclId - an id to search for in ElementTree instance with which the class
-            has been instanstiated
+            has been instantiated.
     IPver - version of ACL, 4 or 6
     """
     def parseAcl(self,aclId,IPver):
         if IPver not in [4,6]:
-            raise ErrOptionalData("Invalid acl IP version specified: {0}".format(IPver))
+            raise ErrRequiredData("Invalid acl IP version specified: {0}".format(IPver))
 
         if IPver==4:
             if aclId in self.acl4:
                 return self.acl4[aclId]
-            for acl in self.contextToParse.iter('aclv4'):
-                if 'id' in acl.attrib:
-                    if acl.attrib['id']==aclId:
-                        self.acl4[aclId]=ACLv4(aclId)
-                        self.acl4[aclId].parseAcl(acl)
-                        return self.acl4[aclId]
+            else:
+                for acl in self.contextToParse.iter('aclv4'):
+                    if 'id' in acl.attrib:
+                        if acl.attrib['id']==aclId:
+                            self.acl4[aclId]=ACLv4(aclId)
+                            self.acl4[aclId].parseAcl(acl)
+                            return self.acl4[aclId]
         else:
             if aclId in self.acl6:
                 return self.acl6[aclId]
-            for acl in self.contextToParse.iter('aclv6'):
-                if 'id' in acl.attrib:
-                    if acl.attrib['id']==aclId:
-                        self.acl6[aclId]=ACLv6(aclId)
-                        self.acl6[aclId].parseAcl(acl)
-                        return self.acl6[aclId]
-        raise ErrOptionalData(":ACL ({0}) not found in the XML file.".format(aclId))
+            else:
+                for acl in self.contextToParse.iter('aclv6'):
+                    if 'id' in acl.attrib:
+                        if acl.attrib['id']==aclId:
+                            self.acl6[aclId]=ACLv6(aclId)
+                            self.acl6[aclId].parseAcl(acl)
+                            return self.acl6[aclId]
+        raise ErrRequiredData(":ACL ({0}) not found in the XML file.".format(aclId))
 
 class ACLv4():
-
     def __init__(self,aclId):
 
         self.id = aclId
@@ -95,7 +96,7 @@ class ACLv4():
         aclId = self.id
         acl=context
         """
-            eventually add the acl's name
+            eventually add name of the ACL
         """
         if acl.find('name') is not None:
             self.addName(acl.find('name').text)

@@ -22,9 +22,6 @@
 
 import socket
 
-VLAN_MIN=1
-VLAN_MAX=4094
-
 """ Exceptions  """
 class InvalidData(Exception):
     def __init__(self,message,*data):
@@ -32,6 +29,8 @@ class InvalidData(Exception):
         self.msg=message
         self.data = data
 
+""" Thrown when crucial data (with respect to the given feature)
+are invalid or missing. """
 class ErrRequiredData(InvalidData):
     pass
 
@@ -56,7 +55,10 @@ def validateVlanRange(vlanRangeToValidate):
         Parses given vlan range, supported formats are:
             commas separated list: 1,3,4
             dash separated first and last vlan of the range: 1-4094
+            combination of the two: 1-4,7-11,15,18 ...
     """
+    VLAN_MIN=1
+    VLAN_MAX=4094
 
     vlanRange = []
     isSingleVlan = True
@@ -73,7 +75,8 @@ def validateVlanRange(vlanRangeToValidate):
 
         isSingleVlan = True
         try:
-            int(commaSepVlan)
+            if int(commaSepVlan) > VLAN_MAX or int(commaSepVlan) < VLAN_MIN:
+                return False
         except ValueError:
             isSingleVlan = False
 
@@ -82,9 +85,11 @@ def validateVlanRange(vlanRangeToValidate):
             dashSepVlan = commaSepVlan.split('-',1)
             isSingleVlan = True
             try:
-                int(dashSepVlan[0])
-                int(dashSepVlan[1])
-            except ValueError as e:
+                if int(dashSepVlan[0]) > VLAN_MAX or int(dashSepVlan) < VLAN_MIN:
+                    return False
+                if int(dashSepVlan[1]) > VLAN_MAX or int(dashSepVlan) < VLAN_MIN:
+                    return False
+            except ValueError:
                 return False
     return True
 
