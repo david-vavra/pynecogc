@@ -28,7 +28,6 @@ class VTP(IPlugin):
         self.domain=None
         self.version=None
 
-
     def parseContext(self,context,*args):
         for vtp in context.iter('vtp'):
             if vtp.find('mode') is not None:

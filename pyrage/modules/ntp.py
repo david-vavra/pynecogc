@@ -47,6 +47,7 @@ class NTP(IPlugin):
             self.acls6[ntpAccess]=acl
         else:
             raise ErrOptionalData(":ntp:Unable to add ACL ({1}), invalid instance: {0}".format(type(acl),aclId))
+
     def _addHost(self,id,host):
         if self.hosts is None:
             self.hosts = {}
@@ -54,7 +55,6 @@ class NTP(IPlugin):
             self.hosts[id] = host
 
     def parseContext(self,context,acls):
-        contextToParse=context
         for ntp in context.iter('ntp'):
             for acl_id in ntp.iter('acl_id'):
                 aclId=acl_id.text

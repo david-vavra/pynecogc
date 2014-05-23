@@ -22,6 +22,9 @@
 
 import socket
 
+VLAN_MIN=1
+VLAN_MAX=4094
+
 """ Exceptions  """
 class InvalidData(Exception):
     def __init__(self,message,*data):
@@ -57,8 +60,6 @@ def validateVlanRange(vlanRangeToValidate):
             dash separated first and last vlan of the range: 1-4094
             combination of the two: 1-4,7-11,15,18 ...
     """
-    VLAN_MIN=1
-    VLAN_MAX=4094
 
     vlanRange = []
     isSingleVlan = True

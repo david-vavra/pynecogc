@@ -101,9 +101,9 @@ class SNMP(IPlugin):
             self.groups={}
         if name not in self.groups:
             if version not in [3]:
-                raise ErrRequiredData(":snmp:Invalid group ('{0}') security model specified: '{1}'".format(name,secModel))
+                raise ErrRequiredData(":snmp:Invalid group ('{0}') security model specified: '{1}'".format(name,version))
             if version=='3' and secLevel.lower() not in ['noauth','auth','priv']:
-                raise ErrOptionalData(":snmp:Invalid group ('{0}') authentication level specified: '{1}'".format(name,authLevel))
+                raise ErrOptionalData(":snmp:Invalid group ('{0}') authentication level specified: '{1}'".format(name,secLevel))
             group={
                    'version':version,
                    'secLevel':secLevel,
@@ -191,14 +191,12 @@ class SNMP(IPlugin):
                     tags=trap_host.attrib['tags'].split(','),
                 )
 
-            #authLevel=trap_host.attrib['authLevel'] if ver=='3' else
-
             for trap in snmp.iter('trap'):
                 self.addTrap(trap.text,trap.attrib['tags'].split(','))
 
             for view in snmp.iter('view'):
                 name=view.attrib['id']
-                # view is not added if there is no tree defined within it
+                """ view is not added if there is no tree defined within it """
                 for tree in view.iter('tree'):
                     self.addView(
                         name,
@@ -247,7 +245,7 @@ class SNMP(IPlugin):
                         encrypted=False if 'encrypted' not in auth.attrib or auth.attrib['encrypted'].lower()=='false' else True,
                         authString=auth.text)
                 priv=user.find('priv')
-                #def changeUserPriv(self,userName,privType,encrypted,privString)
+
                 if len(priv)>0:
                     self.changeUserPriv(
                         userName=user.find('username').text,

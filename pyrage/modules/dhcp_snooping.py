@@ -20,7 +20,6 @@
 
 """
 from yapsy.IPlugin import IPlugin
-# zmenit po testovani
 from pyrage.utils import validateVlanRange
 from pyrage.utils import InvalidVlanRange
 from pyrage.utils import InvalidInterface
