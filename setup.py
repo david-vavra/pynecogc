@@ -23,7 +23,7 @@
 from setuptools import setup
 
 setup(name='Pyrage',
-      version='0.1',
+      version='1.0',
       description='Python network config assessor and generator.',
       author='David Vavra',
       author_email='vavra.david@email.cz',
@@ -39,5 +39,5 @@ setup(name='Pyrage',
                                                    'pyrage/mako/comware_genconf.mako']),
                     ('/usr/local/bin/', ['ncat_xmlconfig','pynecog'])
                   ],
-      install_requires=["Mako ==0.9.1","Yapsy ==1.10.223, ==1.10.323"]
+      install_requires=["Mako ==0.9.1","Yapsy ==1.10.223, ==1.10.323", "argparse ==1.2.1"]
      )
