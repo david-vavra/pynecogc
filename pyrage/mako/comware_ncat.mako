@@ -248,10 +248,9 @@ ConfigClassParentName:3. Data plane
 ConfigRuleName:3.4.1 Require arp inspection enabled
 ConfigRuleParentName:3.4 Arp inspection 
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareVlanInterface
-ConfigRuleInstance:${makeRegexOfContextInstanceList(makeListOfVlanRange(arpInspection.vlanRange))}
+ConfigRuleContext:ComwareGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>arp detection enable</code>
+ConfigRuleMatch:<code>arp detection.*</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require Arp inspection enabled
 ConfigRuleSelected:Yes
@@ -335,7 +334,7 @@ port-security max-mac-count 1
 ConfigRuleName:3.7 Require IP source guard to be enabled on given interfaces
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion: version.*
-ConfigRuleContext:AccessPort
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(
 						makeListOfVlanRange(ipSourceGuard.vlanRange))}
 ConfigRuleType:Required

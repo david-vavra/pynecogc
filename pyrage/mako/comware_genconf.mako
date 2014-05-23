@@ -1,4 +1,14 @@
 <%!
+"""
+A mako template which generates configuration on Comware syntax. The aim is on generating
+syntax without overwhelming the user with warnings and possible errors as a user known od the 
+syntax is expected. Thus, for instance, only two AAA servers are printed in an every group
+as this is the limitation of Comware syntax. 
+Also limitations on the expected data are not validated (i.e. types of ACL for the particular application).
+This could higly vary with the versions and the aim of this template is not to do these checks on behalf of the user.
+Some considerations should be thus done when the XML if filled with the desired data an choose them so the generated configuration
+should be accepted by the device.
+"""
 import re
 from collections import defaultdict
 def buildNetMask(maskLen,wildcardFormat=True):
@@ -238,9 +248,201 @@ def printAcl(acl):
     """
     output=re.sub(r'[ ]+',' ',output)
 
-    return output.rstrip()   
-%> 
+    return output.rstrip()
 
+def getAclName(acl):
+    if acl.name is None and (acl.number is None or 'comware' not in acl.number):
+        return "ERR ACL HAS NO NAME"
+    if acl.name is not None:
+        return acl.name
+    else:
+        return acl.number['comware']
+    
+"""
+def printAAA_AuthGroup(aaa,name):
+    if aaa is None or name is None or len(aaa)==0 or len(name)==0:
+        return "UNABLE TO PRINT AAA AUTH GROUP"
+    try:
+        group=aaa.groups[name]
+        if group.type.lower() not in ['tacacs','tacacs+','radius']:
+            return "# UNABLE TO PRINT AAA AUTH GROUP ({0}), INVALID TYPE: {1}".format(
+                name,
+                group.type
+            )
+        output="{0} scheme {1}\n".format(
+                'radius' if group.type.lower()=='radius' else 'hwtacacs',
+                name
+        )            
+        count=0
+        for host in group['hosts']:
+            comware supports only two hosts per group 
+            if count > 1: break
+            if host in aaa.hosts:
+                if group.type.lower() != aaa.hosts[host]['type']:
+                    return "# UNABLE TO PRINT AAA AUTH GROUP, HOST ({0}), GROUP AND HOST TYPE DOES NOT MATCH.".format(
+                        host
+                        )
+                count+=1
+                order='primary' if count == 1 else 'secondary'
+                output+=" {0} authentication {1}\n".format(
+                    order,
+                    aaa.hosts[host]['ip']
+                    )    
+    except ValueError,KeyError as e:
+        return "# UNABLE TO PRINT AAA AUTH GROUP ({0}): {1}".format(
+            name,
+            str(e)
+            )
+    return output+" key authentication FIXME\n#"
+"""     
+%> 
+	SHUTDOWN ALL INTS
+# TODO
+# --------------------------
+#	STP  
+# --------------------------
+# 	NTP  
+% if ntp is not None and ntp.hosts is not None:
+# ntp servers 
+	% for i,host in ntp.hosts.items():
+ntp-service unicast-server ${host}
+	% endfor
+	% if ntp.acls is not None:
+# ntp acls	
+		% if ntp.acls['peer'] is not None:
+ntp-service access peer ${getAclName(ntp.acls['peer'])}			
+		% endif 
+		 % if ntp.acls['server'] is not None:
+ntp-service access server ${getAclName(ntp.acls['server'])}			
+		% endif
+		% if ntp.acls['query'] is not None:
+ntp-service access query ${getAclName(ntp.acls['query'])}					
+		% endif 
+		% if ntp.acls['sync'] is not None:
+ntp-service access synchronization ${getAclName(ntp.acls['sync'])}					
+		% endif 				
+		% if ntp.acls['peer'] is not None:
+${printAcl(ntp.acls['peer'])}			
+		% endif 
+		 % if ntp.acls['server'] is not None:
+${printAcl(ntp.acls['server'])}			
+		% endif
+		% if ntp.acls['query'] is not None:
+${printAcl(ntp.acls['query'])}					
+		% endif 
+		% if ntp.acls['sync'] is not None:
+${printAcl(ntp.acls['sync'])}					
+		% endif 		
+	% endif 
+% endif
+# --------------------------
+#	VTY
+% if device.fqdn is not None:
+sysname ${device.fqdn}
+banner motd ~
+ -- ${device.fqdn} --
+~
+% endif
+% if vty is not None:
+	% if device.l2 == True:
+		% if vty.gw is not None:
+ ip route-static 0.0.0.0 0.0.0.0 ${vty.gw}
+#
+		% endif 
+	% endif 	
+	% if vty.vlan is not None:
+interface Vlan-interface${vty.vlan}
+# TODO IP
+quit
+#
+	% endif
+user-interface vty 0 15 
+	% if vty.acl is not None:
+ acl ${getAclName(vty.acl)} inbound	
+	% endif
+	% if vty.acl6 is not None:
+ acl ipv6 ${getAclName(vty.acl6)} inbound	
+	% endif
+	% if vty.protocols is not None:
+ protocol inbound ${" ".join(vty.protocols.keys())}
+ quit
+	% else:
+ protocol inbound none
+ quit
+ 	% endif
+#
+	% if vty.acl is not None:
+${printAcl(vty.acl)}
+	% endif
+	% if vty.acl6 is not None:
+${printAcl(vty.acl6)}	
+	% endif
+% endif
+# --------------------------
+#	SYSLOG
+% if syslog is not None:
+	% if syslog.hosts is not None:
+		% for i,host in syslog.hosts.items():
+		    % if syslog.facility is not None:
+info-center loghost ${host} ${syslog.facility}
+            % else:
+info-center loghost ${host}
+            % endif
+		% endfor 
+	% endif 
+% endif
+# --------------------------
+#	DHCP SNOOPING
+% if dhcpSnooping is not None:
+	% if dhcpSnooping.trustedPorts is not None:
+		% for port in dhcpSnooping.trustedPorts:
+interface ${port}
+ dhcp-snooping trust
+		% endfor 
+	% endif
+	% if dhcpSnooping.vlanRange is not None and dhcpSnooping.vlanRange=='1-4094':
+dhcp-snooping
+	% endif 
+% endif
+# --------------------------
+#	ARP INSPECTION
+% if arpInspection is not None:
+	% if arpInspection.trustedPorts is not None:
+		% for port in arpInspection.trustedPorts:
+interface ${port}
+ ip arp inspection trust
+		% endfor 
+quit
+    % endif
+	% if arpInspection.vlanRange is not None and arpInspection.vlanRange=='1-4094':
+arp detection src-mac ip
+	% endif 
+% endif 
+# --------------------------
+#	IP SOURCE GUARD
+% if ipSourceGuard is not None and ipSourceGuard.vlanRange is not None: 
+# 
+# VLAN RANGE ${ipSourceGuard.vlanRange}
+#
+% endif
+# --------------------------
+#	DNS
+% if dns is not None and dns.hosts is not None:
+dns resolve
+% for i,host in dns.hosts.items():
+dns host ${host}
+% endfor
+% endif
+
+% if device.l3:
+# --------------------------
+#	uRPF
+% if urpf is not None and urpf.mode is not None:
+ip urpf ${urpf.mode}
+% endif 
+% endif
+# --------------------------
+#	SNMP
 % if snmp is not Undefined:
 snmp-agent sys-info version all
 <% 
@@ -295,3 +497,4 @@ ${printSnmp3User(name,user,snmp.acls)}
 ${printAcl(acl)}    
     % endfor
 % endif
+

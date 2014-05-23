@@ -1143,7 +1143,7 @@ ConfigRuleMatch:<code>( shutdown)|( switchport mode trunk)|( no cdp enable)</cod
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid CDP to run on endhost interfaces
 ConfigRuleSelected:Yes
-ConfigRuleFix:interface INSTANCE\
+ConfigRuleFix:interface INSTANCE${"\\"}
 no cdp run
 
 % if device.l2:
@@ -1249,7 +1249,7 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv4 applied
 ConfigRuleSelected:Yes
 ConfigRuleFix:line INSTANCE${"\\"}
-access-class ${vty.acl} in
+access-class ${getAclName(vty.acl)} in
 
 ConfigRuleName:1.1.1.3 Require VTY ACL for Ipv4 defined
 ConfigRuleParentName:1.1.1 Limit VTY remote access
@@ -1291,7 +1291,7 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require VTY ACL for Ipv6 applied
 ConfigRuleSelected:Yes
 ConfigRuleFix:line INSTANCE${"\\"}
-access-class ${vty.acl6} in
+access-class ${getAclName(vty.acl6)} in
 
 ConfigRuleName:1.1.1.6 Require VTY ACL for Ipv6 defined
 ConfigRuleParentName:1.1.1 Limit VTY remote access
