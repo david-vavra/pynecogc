@@ -54,7 +54,7 @@ def printAcl(acl):
     # choose the acl name
     name=""
     isNumberedAcl=False
-    if 'cisco' in acl.number:
+    if hasattr(acl,'number') and 'cisco' in acl.number:
     	name=acl.number['cisco']
     	isNumberedAcl=True
     elif len(acl.name)>0:
@@ -216,14 +216,15 @@ def printAcl6(acl):
     
     return output.strip() 
 
+    
 def getAclName(acl):
-	if acl is None: 
-		return ""
-	if 'cisco' in acl.number:
-		return acl.number['cisco']
-	else: 
-		return acl.name
-
+    if acl is None: 
+        return "ERR_NONE"
+    if hasattr(acl,'number') and 'cisco' in acl.number:
+        return acl.number['cisco']
+    else: 
+        return acl.name   
+        
 """ AAA """
 def printAAAServers(aaa):
 	aaaServers=""
@@ -530,7 +531,9 @@ ntp access-group ipv6 query-only ${ntp.acls6['query'].name}
 ntp access-group ipv6 serve-only ${ntp.acls6['sync'].name}					
 		% endif 				
 		% for access in ntp.acls6:
+		    % if ntp.acls6[access] is not None:
 ${printAcl6(ntp.acls6[access])}
+            % endif 
 		% endfor  
 	% endif 	
 % endif
@@ -607,7 +610,7 @@ ip ssh version ${vty.protocols['ssh']['version']}
 ${printAcl(vty.acl)}
 	% endif
 	% if vty.acl6 is not None:
-${printAcl(vty.acl6)}	
+${printAcl6(vty.acl6)}	
 	% endif
 % endif
 ! --------------------------

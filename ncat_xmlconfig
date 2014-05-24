@@ -84,6 +84,8 @@ def main():
         except Exception as e:
             logger.log('critical',dev+':'+ e.message)
             raise SystemExit(3)
+        sys.stdout.write("Generated rules saved in '{0}'.\n".format(dev))
+
 
 
 if __name__=="__main__":

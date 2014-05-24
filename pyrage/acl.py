@@ -70,6 +70,8 @@ class ACL():
 class ACLv4():
     def __init__(self,aclId):
 
+        self.ver=4
+
         self.id = aclId
 
         self.name='NOT DEFINED'
@@ -138,8 +140,11 @@ class ACLv4():
 
 class ACLv6():
     def __init__(self,aclId):
+        self.ver = 6
 
         self.id = aclId
+
+        self.number = {}
 
         self.name='NOT DEFINED'
         self.rules={}
@@ -148,6 +153,10 @@ class ACLv6():
         if len(name)>0:
             self.name = name
 
+    def addNumbers(self,**kwargs):
+        for key,value in kwargs.items():
+            self.number[key]=value
+
     def addRule(self,id,rule):
         assert rule and id
         self.rules[id]=rule
@@ -155,6 +164,13 @@ class ACLv6():
     def parseAcl(self,context):
         aclId = self.id
         acl=context
+
+        # add the acl number(s)
+        aclNumbers={}
+        for aclNumber in acl.iter('number'):
+            aclNumbers[aclNumber.attrib['id']] = aclNumber.text
+        self.addNumbers(**aclNumbers)
+
         """
             eventually add the acl's name
         """

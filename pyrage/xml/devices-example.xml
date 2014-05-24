@@ -13,7 +13,7 @@
         <type>WS-C2960-48TC-L</type>
         <l2>true</l2>
         <l3>false</l3>
-        <ipv6>false</ipv6>
+        <ipv6>true</ipv6>
         <vlanbackup>false</vlanbackup>
         <arp_inspection>
             <trusted_interface>Gi0/1</trusted_interface>
@@ -39,10 +39,10 @@
 		</aaa_method_list>
 	</aaa_authentication>
 	<arp_inspection>
-		<vlan_range>1-4094</vlan_range>
+		<vlan_range>10-15,17</vlan_range>
 	</arp_inspection>
 	<dhcp_snooping>
-		<vlan_range>1-4094</vlan_range>
+		<vlan_range>10-15,17</vlan_range>
 	</dhcp_snooping>
 	<dns_host id="1">10.0.0.10</dns_host>
 	<hsrp_instance id='50'>
@@ -51,7 +51,7 @@
 		<interface>Vlan110</interface>
 	</hsrp_instance>
 	<ip_source_guard>
-		<vlan_range>1-4094</vlan_range>
+		<vlan_range>10-15,17</vlan_range>
 	</ip_source_guard>
 	<ntp>
 		<host id="1">10.0.0.1</host>
@@ -65,7 +65,7 @@
 		<trap tags="all">authenticate-fail</trap>
 		<trap_host id="1" version="2c" tags="all,auth" community="trapkom">10.0.0.7</trap_host>
 		<trap_host_v3 id="1" tags="all,auth" user="trap_user" secLevel="priv">10.0.0.7</trap_host_v3>
-		<user group="groupName" acl="ntp">
+		<user group="groupName">
 			<username>vavra</username>
 			<auth encrypted="false" type="md5">authString</auth>
 			<priv encrypted="false" type="aes256">privString</priv>
@@ -90,6 +90,7 @@
 	</vtp>
 	<vty>
 		<acl_id>mgmt</acl_id>
+        <acl6_id>mgmt6</acl6_id>
 		<gw>192.168.50.1</gw>
 		<protocol version="2" timeout="120" retries="3">ssh</protocol>
 		<protocol>telnet</protocol>
@@ -104,11 +105,23 @@
 		<number id="cisco">71</number>
 		<number id="comware">3000</number>
 		<type id="cisco">extended</type>
-		<rule seq="10">
-			<protocol state="established">tcp</protocol>
+        <rule seq="5">
+			<protocol>tcp</protocol>
 			<source mask="26" port="22">192.168.1.0</source>
 			<destination mask="0">0.0.0.0</destination>
-			<action log="true">permit</action>				
+			<action log="true">permit</action>
+		</rule>
+		<rule seq="10">
+			<protocol>tcp</protocol>
+			<source mask="32">192.168.50.1</source>
+			<destination mask="0">0.0.0.0</destination>
+			<action>permit</action>
+		</rule>
+        <rule seq="15">
+			<protocol state="established">tcp</protocol>
+			<source mask="26">192.168.1.0</source>
+			<destination mask="0">0.0.0.0</destination>
+			<action>permit</action>
 		</rule>
 		<rule seq="20">
 			<comment>deny any other traffic</comment>
@@ -117,22 +130,16 @@
 			<action>deny</action>
 		</rule>
 </aclv4>
-<aclv4 id="ntp">
-			<name>77</name>
-            <type id="cisco">standard</type>
-    		<rule seq="10">
-				<source mask="32">10.0.0.1</source>
-			    <action>permit</action>
-			</rule>
-			<rule seq="20">
-				<source mask="32">10.0.0.2</source>
-				<action>permit</action>
-			</rule>
-			<rule seq="20">				
-				<source mask="0">0.0.0.0</source>
-				<destination mask="0">0.0.0.0</destination>
-				<action>deny</action>
-			</rule>
-</aclv4>
 </acls>
+<acls6>
+    <aclv6 id="mgmt6">
+      <name>VTY6</name>
+      <rule seq="10">
+        <protocol>ipv6</protocol>
+        <source mask="0">::</source>
+        <destination mask="0">::</destination>
+        <action log="true">deny</action>
+      </rule>
+    </aclv6>
+</acls6>
 </network>

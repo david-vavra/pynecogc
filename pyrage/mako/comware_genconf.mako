@@ -199,13 +199,17 @@ def printAcl(acl):
 
     if acl.name is not None:
         """ pokus """ 
-        output+="acl number {num} name {name}\n".format(num=aclNum,name=acl.name)
+        output+="acl {ver}number {num} name {name}\n".format(num=aclNum,
+            name=acl.name,
+            ver='ipv6 ' if acl.ver==6 else '')
     else:
-        output+="acl number {num}\n".format(
-            num=aclNum
+        output+="acl {ver}number {num}\n".format(
+            num=aclNum,
+            ver='ipv6 ' if acl.ver==6 else ''
         )
-    for id,rule in acl.rules.items():
-        lineNum=int(id)
+    for rule_id in sorted(acl.rules):
+        rule=acl.rules[rule_id]
+        lineNum=int(rule_id)
         # build rule lines
         if 'optional' in rule and rule['optional']:
         	continue
@@ -214,7 +218,7 @@ def printAcl(acl):
             # insert the comment line between the rules,
             if lineNum-1 in acl.rules:
                 if lineNum+1 in acl.rules:
-                    return "# UNABLE TO PRINT ACL: '{0}'".format(acl.id)
+                    return "# UNABLE TO PRINT ACL: '{0}'".format(acl.rule_id)
                 else:
                     lineNum+=1
 
@@ -224,7 +228,7 @@ def printAcl(acl):
 
         lineSyntax=" rule %(seq)s %(action)s %(protocol)s %(source_ip)s %(source_mask)s %(source_port)s %(destination_ip)s %(destination_mask)s %(destination_port)s %(state)s %(log)s"
         lineArgs = defaultdict(str,rule)
-        lineArgs['seq'] = id
+        lineArgs['seq'] = rule_id
 
         # build wildcard masks from bit-length repr.
         if lineArgs['source_mask']=='32':
@@ -244,7 +248,7 @@ def printAcl(acl):
     output=output.replace('0.0.0.0 255.255.255.255','any')
     """
     Normalize the format of resulting acl
-    - strip any whitespace of width more than one
+    - strip any whitespace of wrule_idth more than one
     """
     output=re.sub(r'[ ]+',' ',output)
 

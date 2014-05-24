@@ -70,6 +70,7 @@ def main():
                 **instance.instances))
         except:
             logger.log ('critical',exceptions.text_error_template().render())
+            raise SystemExit(2)
         f.close()
         sys.stdout.write("Generated configuration saved in file '{0}'.\n".format(dev))
 

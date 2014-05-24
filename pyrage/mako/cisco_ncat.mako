@@ -294,7 +294,7 @@ def printAcl6(acl,conf):
     
 def getAclName(acl):
     if acl is None: 
-        return ""
+        return "ERR_NONE"
     if hasattr(acl,'number') and 'cisco' in acl.number:
         return acl.number['cisco']
     else: 
