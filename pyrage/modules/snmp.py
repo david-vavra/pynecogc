@@ -1,16 +1,33 @@
-__author__ = 'David Vavra'
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+"""
+    Copyright (C) 2014  David Vavra  (vavra.david@email.cz)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""
 from yapsy.IPlugin import IPlugin
 
 from pyrage.utils import ErrRequiredData
 from pyrage.utils import ErrOptionalData
 
-import re
-
-
 class SNMP(IPlugin):
     def __init__(self):
         self.communities = None
+        """ A dictionary of traps {tag:list}"""
         self.traps = None
         self.trap_hosts = None
         self.acls = {}
@@ -84,10 +101,11 @@ class SNMP(IPlugin):
             self.groups={}
         if name not in self.groups:
             if version not in [3]:
-                raise ErrRequiredData(":snmp:Invalid group ('{0}') security model specified: '{1}'".format(name,secModel))
+                raise ErrRequiredData(":snmp:Invalid group ('{0}') security model specified: '{1}'".format(name,version))
             if version=='3' and secLevel.lower() not in ['noauth','auth','priv']:
-                raise ErrOptionalData(":snmp:Invalid group ('{0}') authentication level specified: '{1}'".format(name,authLevel))
-            group={'version':version,
+                raise ErrOptionalData(":snmp:Invalid group ('{0}') authentication level specified: '{1}'".format(name,secLevel))
+            group={
+                   'version':version,
                    'secLevel':secLevel,
                    'aclId':aclId,
                    'views':{'read':None,'write':None}
@@ -99,7 +117,7 @@ class SNMP(IPlugin):
             raise ErrRequiredData(":snmp:Invalid view ('{0}') privilege specified: {'1'}".format(viewName,viewPrivilege))
         if groupName not in self.groups:
             raise ErrRequiredData(":snmp:Can't assign view with nonexisting group: '{0}'".format(groupName))
-        self.groups[groupName]['views'][viewPrivilege]=viewName
+        self.groups[groupName]['views'][viewPrivilege.lower()]=viewName
 
     def addUser(self,userName,group,aclId):
         if self.users is None:
@@ -173,14 +191,12 @@ class SNMP(IPlugin):
                     tags=trap_host.attrib['tags'].split(','),
                 )
 
-            #authLevel=trap_host.attrib['authLevel'] if ver=='3' else
-
             for trap in snmp.iter('trap'):
                 self.addTrap(trap.text,trap.attrib['tags'].split(','))
 
             for view in snmp.iter('view'):
                 name=view.attrib['id']
-                # view is not added if there is no tree defined within it
+                """ view is not added if there is no tree defined within it """
                 for tree in view.iter('tree'):
                     self.addView(
                         name,
@@ -229,7 +245,7 @@ class SNMP(IPlugin):
                         encrypted=False if 'encrypted' not in auth.attrib or auth.attrib['encrypted'].lower()=='false' else True,
                         authString=auth.text)
                 priv=user.find('priv')
-                #def changeUserPriv(self,userName,privType,encrypted,privString)
+
                 if len(priv)>0:
                     self.changeUserPriv(
                         userName=user.find('username').text,

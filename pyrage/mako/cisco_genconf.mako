@@ -1,5 +1,4 @@
 <%!
-
 from collections import defaultdict 
 
 def buildNetMask(maskLen,wildcardFormat=True):
@@ -156,8 +155,66 @@ def printAcl(acl):
     return '\n'.join(output_mod)
 
 def printAcl6(acl):
-	""" TODO """
-	return "IPV6 ACLS PRINT YET NOT IMPLEMENTED"    
+    """
+        acl : an ACL to be printed 
+    """
+    separator = "!"
+    output=""
+
+    if acl is None:
+        return "! Unable to print ipv6 acl\n"
+
+    # choose the acl name
+    name=acl.name
+     
+    lineSyntax = " %(action)s %(protocol)s %(source_ip)s/%(source_mask)s %(source_port)s %(destination_ip)s/%(destination_mask)s %(destination_port)s %(state)s %(log)s"
+
+    lineComment = "remark %s"
+    
+    output=""
+    # build the acl
+    output += 'ipv6 access-list {name}\n'.format( 
+        name=name)
+
+    for lineNum in sorted(acl.rules.keys()):
+        rule = acl.rules[lineNum]
+        # build rule lines
+        if 'optional' in rule and rule['optional']:
+            continue
+        elif 'comment' in rule:            
+            comment = rule['comment']
+            # insert the comment line between the rules,
+            # change their seq if neccessary
+            if int(lineNum)-1 in acl.rules and not _isAclNumbered(name):
+                if int(lineNum)+1 in acl.rules:
+                    return "! Unable to print acl: {0}\n".format(name)
+                    lineArgs['seq'] = int(lineNum)+1
+
+            # the comment itself
+            output += ' ' + lineComment % comment + '\n'
+            
+        
+        lineArgs = defaultdict(str,rule)
+        lineArgs['seq'] = lineNum
+
+        # build wildcard masks from bit-length repr.
+        if lineArgs['source_mask']=='32':
+            lineArgs['source_mask']=''
+            lineArgs['source_ip']='host '+lineArgs['source_ip']
+        if lineArgs['destination_mask']=='32':
+            lineArgs['destination_mask']=''
+            lineArgs['destination_ip']='host '+lineArgs['destination_ip']
+        # build a proper source/dest port def.syntax
+        lineArgs['source_port']=('eq '+lineArgs['source_port']) if len(lineArgs['source_port']) else lineArgs['source_port']
+        lineArgs['destination_port']=('eq '+lineArgs['destination_port']) if len(lineArgs['destination_port']) else lineArgs['destination_port']
+        lineArgs['log']='log' if lineArgs['log']==True else ''         
+        output += (lineSyntax % lineArgs).rstrip() + '\n'
+    
+    """ output=output.replace('deny','deny  ') """
+    output=output.replace('::/0','any')
+    output = re.sub(r'[ ]+',' ', output)
+    
+    return output.strip() 
 
 def getAclName(acl):
 	if acl is None: 
@@ -461,16 +518,16 @@ ${printAcl(ntp.acls['sync'])}
 	% if device.ip6 and ntp.acls6 is not None:
 ! ntp acls for ipv6
 		% if ntp.acls6['peer'] is not None:
-ntp access-group ipv6 peer ${getAclName(ntp.acls6['peer'])}				
+ntp access-group ipv6 peer ${ntp.acls6['peer'].name}				
 		% endif 
 		 % if ntp.acls6['server'] is not None:
-ntp access-group ipv6 serve ${getAclName(ntp)}			
+ntp access-group ipv6 serve ${ntp.acls6['server'].name}			
 		% endif
 		% if ntp.acls6['query'] is not None:
-ntp access-group ipv6 query-only ${getAclName(ntp)}					
+ntp access-group ipv6 query-only ${ntp.acls6['query'].name}					
 		% endif 
 		% if ntp.acls6['sync'] is not None:
-ntp access-group ipv6 serve-only ${getAclName(ntp)}					
+ntp access-group ipv6 serve-only ${ntp.acls6['sync'].name}					
 		% endif 				
 		% for access in ntp.acls6:
 ${printAcl6(ntp.acls6[access])}

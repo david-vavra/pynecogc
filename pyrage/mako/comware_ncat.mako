@@ -6,6 +6,8 @@
 #		testing
 
 <%!
+from collections import defaultdict 
+
 def getAclType(number):
     try:
         if int(number) in range(2000,2999):
@@ -65,9 +67,9 @@ def printAcl(acl):
 
             # the comment itself
             else:
-                output += 'rule ' + str(lineNum-1) + ' remark '+ comment + '\\\n'
+                output += ' rule ' + str(lineNum-1) + ' remark '+ comment + '\\\n'
 
-        lineSyntax="rule %(seq)s %(action)s %(protocol)s %(source_ip)s %(source_mask)s %(source_port)s %(destination_ip)s %(destination_mask)s %(destination_port)s %(state)s %(log)s"
+        lineSyntax=" rule %(seq)s %(action)s %(protocol)s %(source_ip)s %(source_mask)s %(source_port)s %(destination_ip)s %(destination_mask)s %(destination_port)s %(state)s %(log)s"
         lineArgs = defaultdict(str,rule)
         lineArgs['seq'] = id
 
@@ -94,7 +96,7 @@ def printAcl(acl):
     output=re.sub(r'[ ]+',' ',output)
 
     # strip newline at the end
-    return output[:-2]
+    return output.rstrip()
 
 def makeListOfVlanRange(vlanRange):
     if not vlanRange:
@@ -246,10 +248,9 @@ ConfigClassParentName:3. Data plane
 ConfigRuleName:3.4.1 Require arp inspection enabled
 ConfigRuleParentName:3.4 Arp inspection 
 ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareVlanInterface
-ConfigRuleInstance:${makeRegexOfContextInstanceList(makeListOfVlanRange(arpInspection.vlanRange))}
+ConfigRuleContext:ComwareGlobal
 ConfigRuleType:Required
-ConfigRuleMatch:<code>arp detection enable</code>
+ConfigRuleMatch:<code>arp detection.*</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Require Arp inspection enabled
 ConfigRuleSelected:Yes
@@ -333,7 +334,7 @@ port-security max-mac-count 1
 ConfigRuleName:3.7 Require IP source guard to be enabled on given interfaces
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion: version.*
-ConfigRuleContext:AccessPort
+ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:${makeRegexOfContextInstanceList(
 						makeListOfVlanRange(ipSourceGuard.vlanRange))}
 ConfigRuleType:Required

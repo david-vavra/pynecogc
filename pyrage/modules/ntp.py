@@ -1,5 +1,24 @@
-__author__ = 'David Vavra'
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+"""
+    Copyright (C) 2014  David Vavra  (vavra.david@email.cz)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""
 from yapsy.IPlugin import IPlugin
 from pyrage.acl import ACLv4
 from pyrage.acl import ACLv6
@@ -28,6 +47,7 @@ class NTP(IPlugin):
             self.acls6[ntpAccess]=acl
         else:
             raise ErrOptionalData(":ntp:Unable to add ACL ({1}), invalid instance: {0}".format(type(acl),aclId))
+
     def _addHost(self,id,host):
         if self.hosts is None:
             self.hosts = {}
@@ -35,7 +55,6 @@ class NTP(IPlugin):
             self.hosts[id] = host
 
     def parseContext(self,context,acls):
-        contextToParse=context
         for ntp in context.iter('ntp'):
             for acl_id in ntp.iter('acl_id'):
                 aclId=acl_id.text

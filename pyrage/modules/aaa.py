@@ -1,14 +1,30 @@
-__author__ = 'David Vavra'
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+    Copyright (C) 2014  David Vavra  (vavra.david@email.cz)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""
 
 from yapsy.IPlugin import IPlugin
 
 from pyrage.utils import ErrRequiredData
 
-"""
-TODO
-aaa method list, add id attrbute. because name could be same for different lists. Add name to subelements
-aaa method list, add apply_on? line,enable,con
-"""
+
 class AAA(IPlugin):
     def __init__(self):
         self.hosts = {}
@@ -60,7 +76,7 @@ class AAA(IPlugin):
 
     def parseContext(self,contextToParse,*args):
 
-        for aaa_def in contextToParse.iter('aaa'):
+        for aaa_def in contextToParse.iter('aaa_authentication'):
             for group in contextToParse.iter('aaa_group'):
                 self.addGroup(
                         group.attrib['id'],

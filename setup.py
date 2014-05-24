@@ -1,18 +1,29 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-__author__ = 'David Vavra'
+"""
+    Copyright (C) 2014  David Vavra  (vavra.david@email.cz)
 
-'''
-@author: David Vavra
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-This script performs the installation of Pyrage. Core modules, altogether with example
-mako templates, xml network definition and fundamental modules.
-'''
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""
 
 from setuptools import setup
 
 setup(name='Pyrage',
-      version='0.1',
+      version='1.0',
       description='Python network config assessor and generator.',
       author='David Vavra',
       author_email='vavra.david@email.cz',
@@ -26,6 +37,7 @@ setup(name='Pyrage',
                                                    'pyrage/mako/cisco_ncat.mako',
                                                    'pyrage/mako/comware_ncat.mako',
                                                    'pyrage/mako/comware_genconf.mako']),
-                    ('/usr/local/bin/', ['ncat_xmlconfig','pyge'])
-                  ]
+                    ('/usr/local/bin/', ['ncat_xmlconfig','pynecog'])
+                  ],
+      install_requires=["Mako ==0.9.1","Yapsy ==1.10.223, ==1.10.323", "argparse ==1.2.1"]
      )

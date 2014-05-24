@@ -1,5 +1,23 @@
-__author__ = 'David Vavra'
+# -*- coding: utf-8 -*-
 
+"""
+    Copyright (C) 2014  David Vavra  (vavra.david@email.cz)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""
 from pyrage.utils import ErrRequiredData
 from pyrage.utils import ErrOptionalData
 
@@ -11,7 +29,7 @@ class ACL():
     network - a xml ElementTree instance which contains the acls
     """
     def __init__(self,network):
-        self.context=network
+        self.contextToParse=network
         self.acl4={}
         self.acl6={}
 
@@ -20,35 +38,36 @@ class ACL():
 
     Arguments:
     aclId - an id to search for in ElementTree instance with which the class
-            has been instanstiated
+            has been instantiated.
     IPver - version of ACL, 4 or 6
     """
     def parseAcl(self,aclId,IPver):
         if IPver not in [4,6]:
-            raise ErrOptionalData("Invalid acl IP version specified: {0}".format(IPver))
+            raise ErrRequiredData("Invalid acl IP version specified: {0}".format(IPver))
 
         if IPver==4:
             if aclId in self.acl4:
                 return self.acl4[aclId]
-            for acl in self.context.iter('aclv4'):
-                if 'id' in acl.attrib:
-                    if acl.attrib['id']==aclId:
-                        self.acl4[aclId]=ACLv4(aclId)
-                        self.acl4[aclId].parseAcl(acl)
-                        return self.acl4[aclId]
+            else:
+                for acl in self.contextToParse.iter('aclv4'):
+                    if 'id' in acl.attrib:
+                        if acl.attrib['id']==aclId:
+                            self.acl4[aclId]=ACLv4(aclId)
+                            self.acl4[aclId].parseAcl(acl)
+                            return self.acl4[aclId]
         else:
             if aclId in self.acl6:
                 return self.acl6[aclId]
-            for acl in self.context.iter('aclv6'):
-                if 'id' in acl.attrib:
-                    if acl.attrib['id']==aclId:
-                        self.acl6[aclId]=ACLv6(aclId)
-                        self.acl6[aclId].parseAcl(acl)
-                        return self.acl6[aclId]
-        raise ErrOptionalData(":ACL ({0}) not found in the XML file.".format(aclId))
+            else:
+                for acl in self.contextToParse.iter('aclv6'):
+                    if 'id' in acl.attrib:
+                        if acl.attrib['id']==aclId:
+                            self.acl6[aclId]=ACLv6(aclId)
+                            self.acl6[aclId].parseAcl(acl)
+                            return self.acl6[aclId]
+        raise ErrRequiredData(":ACL ({0}) not found in the XML file.".format(aclId))
 
 class ACLv4():
-
     def __init__(self,aclId):
 
         self.id = aclId
@@ -77,7 +96,7 @@ class ACLv4():
         aclId = self.id
         acl=context
         """
-            eventually add the acl's name
+            eventually add name of the ACL
         """
         if acl.find('name') is not None:
             self.addName(acl.find('name').text)
