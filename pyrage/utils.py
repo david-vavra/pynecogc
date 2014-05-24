@@ -86,9 +86,9 @@ def validateVlanRange(vlanRangeToValidate):
             dashSepVlan = commaSepVlan.split('-',1)
             isSingleVlan = True
             try:
-                if int(dashSepVlan[0]) > VLAN_MAX or int(dashSepVlan) < VLAN_MIN:
+                if int(dashSepVlan[0]) > VLAN_MAX or int(dashSepVlan[0]) < VLAN_MIN:
                     return False
-                if int(dashSepVlan[1]) > VLAN_MAX or int(dashSepVlan) < VLAN_MIN:
+                if int(dashSepVlan[1]) > VLAN_MAX or int(dashSepVlan[1]) < VLAN_MIN:
                     return False
             except ValueError:
                 return False
