@@ -14,12 +14,12 @@ def makeListOfVlanRange(vlanRange):
     vlanList=[]
     for r in listOfRanges:
         if '-' not in r:
-            # test whether given ranges are in fact vlans (i.e. vlanRange was sth like '1,2,3,10')
+            """ test whether given ranges are in fact vlans (i.e. vlanRange was sth like '1,2,3,10') """
             vlanList.append(int(r))
         else:
             r=r.split('-')
             if len(r)>2:
-                # '1-2-10' -> not valid vlanRange
+                """ '1-2-10' -> not a valid vlanRange """
                 return []
             try:
                 vlanList+=range(int(r[0]),int(r[1])+1)
@@ -46,12 +46,8 @@ def buildNetMask(maskLen,wildcardFormat=True):
             maskLen = int(maskLen)
         except ValueError:
             return "INVALID_MASK"
-            #raise InvalidDataGiven("Invalid mask value given: '{0}'".format(
-            #    maskLen),maskLen)
         if maskLen not in range(33):
             return "INVALID_MASK"
-            #raise InvalidDataGiven("Invalid mask length given: '{0}'".format(
-            #   maskLen),maskLen)
 
         if wildcardFormat:
             net = '0'
@@ -95,18 +91,20 @@ def getRegexOfList(values):
     
     
 def makeListOfVlanRange(vlanRange):
-    #    if not validateVlanRange(vlanRange):
-    #       return ['ERR']
+    
     listOfRanges=vlanRange.split(',')
     vlanList=[]
     for r in listOfRanges:
         if '-' not in r:
             # test whether given ranges are in fact vlans (i.e. vlanRange was sth like '1,2,3,10')
-            vlanList.append(int(r))
+            try:
+                vlanList.append(int(r))
+            except ValueError:
+                return ['ERR'] 
         else:
             r=r.split('-')
             if len(r)>2:
-                # '1-2-10' -> not valid vlanRange
+                """ '1-2-10' -> not valid vlanRange """
                 return []
             try:
                 vlanList+=range(int(r[0]),int(r[1])+1)
@@ -114,7 +112,7 @@ def makeListOfVlanRange(vlanRange):
                 return ['ERR']
     vlanList.sort()
     return list(set(vlanList))           
-
+     
 import re 
 
 def printAcl(acl,conf):
@@ -131,7 +129,7 @@ def printAcl(acl,conf):
         return "! Unable to print acl\\\n"
 
  
-    # choose the acl name
+    """ choose the acl name """
     name=""
     isNumberedAcl=False
     if 'cisco' in acl.number:
