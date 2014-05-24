@@ -353,7 +353,7 @@ ConfigRuleVersion: version.*
 ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:.*
 ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>(?!^interface \S+\n port link-mode (bridge|route)\n$).+</code>
+ConfigRuleMatch:<code>(?!(^interface \S+\n( port link-mode (bridge|route)\n)?$)).+</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Forbid non-shutdown interface in default configuration
 ConfigRuleSelected:Yes
@@ -367,7 +367,7 @@ ConfigRuleVersion:version.*
 ConfigRuleContext:ComwareEthernetInterface
 ConfigRuleInstance:.+
 ConfigRuleType:Required
-ConfigRuleMatch:<code>multicast-suppression (kbps |pps )? \d+</code>
+ConfigRuleMatch:<code>(port link-mode route)|(port link-type trunk)|(multicast-suppression (kbps |pps )? \d+)</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Limit amount of broadcast traffic on an interface
 ConfigRuleSelected:Yes
@@ -436,17 +436,6 @@ ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
 ConfigClassSelected:Yes
 ConfigClassParentName:2. Control plane
-
-ConfigRuleName:2.3.1 Auth for every peer-policy
-ConfigRuleParentName:2.3 BGP authentication
-ConfigRuleVersion: version.*
-ConfigRuleContext:BGP_Router
-ConfigRuleInstance:.*
-ConfigRuleType:Required
-ConfigRuleMatch:<code>^ password.*</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Require authentication defined within every peer-policy  
-ConfigRuleSelected:Yes
 
 ConfigRuleName:2.3.1 Auth for every BGP peer
 ConfigRuleParentName:2.3 BGP authentication
