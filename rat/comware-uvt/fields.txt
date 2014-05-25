@@ -1,0 +1,166 @@
+# $Id: fields.txt,v 3.0.2.2 2003/09/01 16:53:21 george Exp $
+#
+# This file defines the field name for entities in the Router Assessment Tool/ncat
+# configuration file.  DO NOT EDIT (unless you are *sure* you know what you're
+# doing)
+#
+# Format:
+#
+#	%HashName:HashKey:HashValue
+#	@ArrayName:ArrayValues
+#	$ScalarName:ScalarValue
+#
+#
+# Data Definitions:
+#
+#	ConfigClassFieldNames	- List of field names for each class plus
+#				  the regular expressions that define ligitimate
+#				  values.
+#
+#	ConfigDataFieldNames	- List of field names for each data item plus
+#				  the regular expressions that define ligitimate
+#				  values.
+#
+#	ConfigRuleFieldNames	- List of field names for each rule plus
+#				  the regular expressions that define ligitimate
+#				  values.
+#
+#	ConfigGlobalFieldNames	- Field names for global config values
+#
+#	ConfigGlobalFieldValues	- Global config values
+#
+#
+# Notes on object usage:
+#	Classes, Rules and Data objects heirarchical.  The fields defined
+#	for classes are common to all objects (name, description, question, etc.)
+#
+#	Upon parsing all class objects are to be listed in a meta-class
+#	called "Config Classes", rules in "Rule Classes", data in "Data Classes".
+#
+#	Also note that the field definitions and accompanying rules are designed
+#	to be processed by a one pass parser, i.e.  all objects  must be
+#	defined (lexicaly) before use.
+#
+#
+
+#
+# Define fields for config classes
+#   Key=field name.  Value=regexp for acceptable values.
+#
+# Common to conf objects
+%ConfigClassFieldNames:ConfigClassName:\w[\w\s,\.\-]+
+%ConfigClassFieldNames:ConfigClassDescription:.*
+%ConfigClassFieldNames:ConfigClassParentName:[\w\s,\.\-,]*
+%ConfigClassFieldNames:ConfigClassChildrenNeeded:[\w\s,\.\-]*
+%ConfigClassFieldNames:ConfigClassConflictsWith:[\w\s,\.\-]*
+#%ConfigClassFieldNames:ConfigClassQuestion:.*
+%ConfigClassFieldNames:ConfigClassAsked:\d
+%ConfigClassFieldNames:ConfigClassOptional:([Yy][Ee][Ss]|[Nn][Oo])
+%ConfigClassFieldNames:ConfigClassSelected:([Yy][Ee][Ss]|[Nn][Oo])
+%ConfigClassFieldNames:ConfigClassParseOrder:\d+
+
+@RequiredConfigClassFields:configclassname,configclassparentname,configclassselected
+
+#
+# Define fields for data fields
+#   Key=field name.  Value=regexp for acceptable values.
+#
+#
+# Common to conf objects
+%ConfigDataFieldNames:ConfigDataName:\w[\w\s,\.\-]+
+%ConfigDataFieldNames:ConfigDataDescription:.*
+%ConfigDataFieldNames:ConfigDataParentName:[\w\s\.\-,]*
+%ConfigDataFieldNames:ConfigDataChildrenNeeded:[\w\s,\.\-]*
+%ConfigDataFieldNames:ConfigDataConflictsWith:[\w\s,\.\-]*
+%ConfigDataFieldNames:ConfigDataQuestion:.*
+%ConfigDataFieldNames:ConfigDataAsked:\d
+%ConfigDataFieldNames:ConfigDataOptional:([Yy][Ee][Ss]|[Nn][Oo])
+%ConfigDataFieldNames:ConfigDataSelected:([Yy][Ee][Ss]|[Nn][Oo])
+# Unique to Data
+%ConfigDataFieldNames:ConfigDataHowToGet:.*
+%ConfigDataFieldNames:ConfigDataDefaultValue:.*
+%ConfigDataFieldNames:ConfigDataParseOrder:\d+
+
+@RequiredConfigDataFields:configdataname,configdatadescription,configdatahowtoget,configdatadefaultvalue
+
+
+
+#
+# Rule Fields Names.  Key = field name.  Value = regexp for acceptable values.
+#
+# Common to conf objects
+%ConfigRuleFieldNames:ConfigRuleName:\w[\w\s,\.\-]+
+%ConfigRuleFieldNames:ConfigRuleDescription:.*
+%ConfigRuleFieldNames:ConfigRuleParentName:[\w\s,\.\-,]*
+%ConfigRuleFieldNames:ConfigRuleChildrenNeeded:[\w\s,\.\-]*
+%ConfigRuleFieldNames:ConfigRuleConflictsWith:[\w\s,\.\-]*
+%ConfigRuleFieldNames:ConfigRuleQuestion:.*
+%ConfigRuleFieldNames:ConfigRuleAsked:\d
+%ConfigRuleFieldNames:ConfigRuleOptional:([Yy][Ee][Ss]|[Nn][Oo])
+%ConfigRuleFieldNames:ConfigRuleSelected:([Yy][Ee][Ss]|[Nn][Oo])
+# Unique to Rule
+%ConfigRuleFieldNames:ConfigRuleVersion:.*
+%ConfigRuleFieldNames:ConfigRuleContext:(ComwareGlobal|AAA_Domain|AAA_HWTACACS|ComwareEthernetInterface|ComwareVlanInterface|ComwareVTY|OSPF_Router|OSPF_Router_Area|BGP_Router|BGP_Group_OR_Peer)
+%ConfigRuleFieldNames:ConfigRuleInstance:.*
+%ConfigRuleFieldNames:ConfigRuleType:(Required|Forbidden)
+%ConfigRuleFieldNames:ConfigRuleMatch:.*
+%ConfigRuleFieldNames:ConfigRuleCallout:.*
+%ConfigRuleFieldNames:ConfigRuleImportance:\d+
+%ConfigRuleFieldNames:ConfigRuleReason:.*
+%ConfigRuleFieldNames:ConfigRuleWarning:.*
+%ConfigRuleFieldNames:ConfigRuleDiscussion:.*
+%ConfigRuleFieldNames:ConfigRuleFix:.*
+%ConfigRuleFieldNames:ConfigRuleParseOrder:\d+
+
+#
+# List Rule Field names that must be defined for each rule
+#
+@RequiredConfigRuleFields:configrulename,configruledescription,configruleparentname,configrulecontext,configruleversion,configruletype,configruleimportance,configruleselected
+
+#
+# Define fields global to the config.
+#   Key=field name.  Value=regexp for acceptable values.
+#
+%ConfigGlobalFieldNames:ConfigVersion:[\d\.]+
+%ConfigGlobalFieldNames:ConfigOrganization:.*
+%ConfigGlobalFieldNames:ConfigDocumentType:.*
+%ConfigGlobalFieldNames:ConfigPlatforms:.*
+%ConfigGlobalFieldNames:ConfigFeedbackTo:.*
+%ConfigGlobalFieldNames:ConfigIntroText:.*
+%ConfigGlobalFieldNames:ConfigTrailingtext:.*
+%ConfigGlobalFieldNames:ConfigGuidePath:.*
+%ConfigGlobalFieldNames:ConfigGuide:.*
+%ConfigGlobalFieldNames:ConfigRulesAlias:.*
+%ConfigGlobalFieldNames:ConfigOutputGroups:.*
+%ConfigGlobalFieldNames:ConfigGlobalParseOrder:\d+
+#
+# email notification global fields, as per George's suggestion.
+# (nz, 5/22/02)
+#
+%ConfigGlobalFieldNames:configmailfrom:.*
+%ConfigGlobalFieldNames:configmailserver:.*
+%ConfigGlobalFieldNames:configmailon:\d+
+%ConfigGlobalFieldNames:configmailto:.*
+%ConfigGlobalFieldNames:configmailresults:.*
+%ConfigGlobalFieldNames:configmailbodytext:.*
+
+#
+# List field names that must be defined in each config.
+#
+#@RequiredGloalFieldNames:...
+
+# default global values
+
+#
+# Values for global config items
+#
+%ConfigGlobalFieldValues:ConfigVersion:0.0
+%ConfigGlobalFieldValues:ConfigOrganization:Local Organization Name
+%ConfigGlobalFieldValues:ConfigDocumentType:Security Assessment Rules
+%ConfigGlobalFieldValues:ConfigPlatforms:Cisco IOS Routers
+%ConfigGlobalFieldValues:ConfigIntroText:Intro
+%ConfigGlobalFieldValues:ConfigTrailingText:Closing
+%ConfigGlobalFieldValues:ConfigRulesAlias:rat_rules.html
+
+
+

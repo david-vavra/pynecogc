@@ -1,0 +1,40 @@
+# Everything is saved to "Global"
+#
+.*:ComwareGlobal:
+
+# AAA_DOMAIN
+# method lists definitions
+^domain (\S+):AAA_Domain->$1:^#$
+
+# AAA_HWTACACS
+# tacacs servers definition
+^hwtacacs scheme (\S+):AAA_HWTACACS->$1:^#$
+
+# Comware Physical Interface
+^interface ((?!Vlan-interface).*Ethernet.+):ComwareEthernetInterface->$1:^#$
+
+# Comware vlan interface 
+^interface Vlan-interface(\d+):ComwareVlanInterface->$1:^#$
+
+# user-interface (vty|tty|aux)
+^user-interface \S+:ComwareVTY->$1:^#$
+
+#OSPF router's context
+^ospf(\d+|router-id \S+|vpn-instance \S+):OSPF_Router->$1:^#$
+
+# OSPF Area
+^ area (\S+):OSPF_Router_Area->$1:( area.+|^#$)
+
+# BGP router 
+^bgp (\d+):BGP_Router->$1:^#$
+
+
+#BGP group or peer definition, example: 
+#bgp 65000
+# undo synchronization
+# group test_group internal
+# peer test_group password simple heslo
+# peer 10.0.0.1 group test_group
+^ peer (\S+) .+:BGP_Group_OR_Peer->$1:(^ (?!peer $1).+)
+
+

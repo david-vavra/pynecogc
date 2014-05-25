@@ -1,0 +1,85 @@
+#
+# Everything is saved to "Global"
+#
+.*:IOSGlobal:
+
+#
+# Parse IOS interface definitions. (Not vlan interface.)
+#
+# For example:
+#
+#   interface Ethernet0
+#    description TWC (Outside FW)
+#    no ip redirects
+#    no ip proxy-arp
+#    no cdp enable
+#   !
+#
+#^interface\s+((\S+Ethernet(?!.+[.]\d+)\S+)|(.*Port-channel.+)):IOSHwInterface->$1:^!$
+^interface\s+((\S*Ethernet\S+)|(Port-channel\d+)):IOSEthernetInterface->$1:^!$
+
+^interface\s+[Vv]lan(\d+):IOSVlanInterface->$1:^!$
+# Probably is not possible to one line be as an entry point to more than one context 
+#^interface\s+((\S*Ethernet\S+)|(Port-channel\d+)|([vV]lan\d+)):IOSEthernetVlanInterface->$1:^!$
+
+#
+# Parse IOS line definitions
+#
+# For example:
+#
+#   line aux 0
+#    exec-timeout 5 0
+#    password xxx
+#    login
+#    no exec
+#   line vty 0 4
+#    access-class 134 in
+#    exec-timeout 15 0
+#    password xxx
+#    login local
+#    transport input ssh
+#   !
+#
+^line\s+(\w[\w \d]*):IOSline->$1:^(line (?!$1)|!)
+
+#
+# Parse IOS Loopback Interface numbers
+#
+
+^interface Loopback(\d+):IOSLoopbackNumber->$1:.*
+
+#BGP peer context
+^neighbor (.+) activate$:BGP_Peer->$1:(?!neighbor $1).+)
+
+#
+# Parse BGP peer-session template definitions
+#
+# For example:
+# template peer-session BASIC-SESSION
+#  remote-as 65080
+#  transport path-mtu-discovery
+#  password 7 00000000000000000
+#  ebgp-multihop 10
+#  update-source Loopback0
+#  timers 10 30
+# exit-peer-session
+#
+template peer-session (\S+):BGP_PeerTemplate->$1:exit-peer-session$
+
+# OSPF router 
+(ipv6 router ospf|router ospf)\s+(\d+):OSPF_Router->$1:^!$
+
+
+# Parse HSRP standby group number 
+#
+# Example: 
+# standby version 2
+# standby 852 ip 147.251.247.65 -> instance=852
+# standby 852 timers 1 4
+# standby 852 priority 200
+# standby 852 preempt delay reload 60
+# standby 852 authentication SKMVoIP
+# standby 852 name Tesco-VoIP
+ standby (\d+) ip.*:HSRPGroup->$1:((standby (\d+) ip.*)|^!$)
+
+

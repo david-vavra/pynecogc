@@ -1,0 +1,9 @@
+This directory contains auxiliary configuration files (contexts, fields)
+that RAT needs for its function and they form so-called configuration type.
+They are to be placed into directory that have been chosen during installation
+of RAT (/usr/etc/configs by default).
+
+A user needs to choose one of the configuration types along with the rulebase.
+So for example:
+
+ncat -t cisco-uvt -r sw.company.com.rules sw.company.com
