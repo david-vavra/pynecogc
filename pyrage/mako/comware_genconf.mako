@@ -1,12 +1,12 @@
 <%!
 """
 A mako template which generates configuration on Comware syntax. The aim is on generating
-syntax without overwhelming the user with warnings and possible errors as a user known od the 
-syntax is expected. Thus, for instance, only two AAA servers are printed in an every group
+syntax without overwhelming the user with warnings and possible errors as knowledge of syntax and limitations is expected from an user. 
+Thus, for instance, only two AAA servers are printed in an every group
 as this is the limitation of Comware syntax. 
 Also limitations on the expected data are not validated (i.e. types of ACL for the particular application).
 This could higly vary with the versions and the aim of this template is not to do these checks on behalf of the user.
-Some considerations should be thus done when the XML if filled with the desired data an choose them so the generated configuration
+Some considerations should be thus done when the XML is filled with the desired data an choose them so the generated configuration
 should be accepted by the device.
 """
 import re
@@ -94,7 +94,7 @@ def printSnmpCommunity(snmpCom,acls):
             aclName=acl.name if acl.name is not None else acl.number['comware']
         return "snmp-agent community {access} {com} {acl}".format(
             com=snmpCom['community'],
-            access='write' if snmpCom['privilege'].lower()=='rw' else 'write',
+            access='write' if snmpCom['privilege'].lower()=='rw' else 'read',
             acl="acl "+aclName
         ).strip()
     except KeyError as e:
