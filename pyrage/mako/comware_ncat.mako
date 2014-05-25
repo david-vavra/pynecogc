@@ -456,7 +456,6 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:${ntpServersRegex}
 % endif 
 
-#{{{ SYSLOG TODO add severity and facility
 % if syslog is not None and syslog.hosts is not None:
 ConfigClassName:2.2 Syslog
 ConfigClassDescription:Syslog events logging related rules 
@@ -478,9 +477,8 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require syslog server configured 
 ConfigRuleSelected:Yes
 % endif
-#}}}
 
-#{{{BGP auth
+
 % if device.l3:
 ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
@@ -509,9 +507,7 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require peer-group or explicit auth defined for every BGP peer  
 ConfigRuleSelected:Yes
 % endif 
-#}}}
 
-#{{{OSPF auth
 % if device.l3:
 ConfigClassName:2.4 OSPF
 ConfigClassDescription:OSPF related rules
@@ -540,7 +536,7 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require message-digest auth for every defined OSPF area 
 ConfigRuleSelected:Yes
 ConfigRuleDiscussion:HP Layer-3 IP Routing Configuration Guide
-ConfigRuleFix:ospf EDIT-BY-HAND${"\\"}
+ConfigRuleFix:ospf EDIT-BY-HAND_OSPF_PROCESS${"\\"}
  area CONTEXT authentication-mode md5
 % endif 
 
@@ -705,7 +701,6 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Disable HTTPS server.
 ConfigRuleSelected:yes
 
-#{{{ SSH
 ConfigClassName:1.2 SSH
 ConfigClassDescription:Access control
 ConfigClassSelected:Yes
@@ -720,8 +715,6 @@ ConfigRuleMatch:<code>sysname \S+</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Configure host name
 ConfigRuleSelected:yes
-
-# todo ? domain-name
 
 ConfigRuleName:1.2.4 - Require VTY Timeout value defined
 ConfigRuleParentName:1.2 SSH

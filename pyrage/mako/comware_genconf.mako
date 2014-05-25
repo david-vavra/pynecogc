@@ -1,6 +1,6 @@
 <%!
 """
-A mako template which generates configuration on Comware syntax. The aim is on generating
+Mako template which generates configuration for Comware devices. The aim is on generating
 syntax without overwhelming the user with warnings and possible errors as knowledge of syntax and limitations is expected from an user. 
 Thus, for instance, only two AAA servers are printed in an every group
 as this is the limitation of Comware syntax. 
@@ -248,7 +248,7 @@ def printAcl(acl):
     output=output.replace('0.0.0.0 255.255.255.255','any')
     """
     Normalize the format of resulting acl
-    - strip any whitespace of wrule_idth more than one
+    - strip any whitespace of width more than one
     """
     output=re.sub(r'[ ]+',' ',output)
 
@@ -261,44 +261,7 @@ def getAclName(acl):
         return acl.name
     else:
         return acl.number['comware']
-    
-"""
-def printAAA_AuthGroup(aaa,name):
-    if aaa is None or name is None or len(aaa)==0 or len(name)==0:
-        return "UNABLE TO PRINT AAA AUTH GROUP"
-    try:
-        group=aaa.groups[name]
-        if group.type.lower() not in ['tacacs','tacacs+','radius']:
-            return "# UNABLE TO PRINT AAA AUTH GROUP ({0}), INVALID TYPE: {1}".format(
-                name,
-                group.type
-            )
-        output="{0} scheme {1}\n".format(
-                'radius' if group.type.lower()=='radius' else 'hwtacacs',
-                name
-        )            
-        count=0
-        for host in group['hosts']:
-            comware supports only two hosts per group 
-            if count > 1: break
-            if host in aaa.hosts:
-                if group.type.lower() != aaa.hosts[host]['type']:
-                    return "# UNABLE TO PRINT AAA AUTH GROUP, HOST ({0}), GROUP AND HOST TYPE DOES NOT MATCH.".format(
-                        host
-                        )
-                count+=1
-                order='primary' if count == 1 else 'secondary'
-                output+=" {0} authentication {1}\n".format(
-                    order,
-                    aaa.hosts[host]['ip']
-                    )    
-    except ValueError,KeyError as e:
-        return "# UNABLE TO PRINT AAA AUTH GROUP ({0}): {1}".format(
-            name,
-            str(e)
-            )
-    return output+" key authentication FIXME\n#"
-"""     
+      
 %> 
 	SHUTDOWN ALL INTS
 # TODO
@@ -356,7 +319,7 @@ banner motd ~
 	% endif 	
 	% if vty.vlan is not None:
 interface Vlan-interface${vty.vlan}
-# TODO IP
+# FIXME IP
 quit
 #
 	% endif
