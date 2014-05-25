@@ -131,15 +131,4 @@
 		</rule>
 </aclv4>
 </acls>
-<acls6>
-    <aclv6 id="mgmt6">
-      <name>VTY6</name>
-      <rule seq="10">
-        <protocol>ipv6</protocol>
-        <source mask="0">::</source>
-        <destination mask="0">::</destination>
-        <action log="true">deny</action>
-      </rule>
-    </aclv6>
-</acls6>
 </network>
