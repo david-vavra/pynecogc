@@ -294,7 +294,7 @@ def printAcl6(acl,conf):
     
 def getAclName(acl):
     if acl is None: 
-        return ""
+        return "ERR_NONE"
     if hasattr(acl,'number') and 'cisco' in acl.number:
         return acl.number['cisco']
     else: 
@@ -371,7 +371,7 @@ ConfigClassParentName:root node
 
 ConfigVersion:0.0.1
 ConfigOrganization:Insitute of Computer Science, Masaryk University
-ConfigDocumentType:Gold Standard Benchmark
+ConfigDocumentType:ICS MU security guideline benchmark
 ConfigPlatforms:Cisco IOS devices
 ConfigFeedbackTo:vavra@ics.muni.cz
 ConfigRulesAlias:cisco-ios-benchmark.html
@@ -434,7 +434,6 @@ ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version 1[0125]\.*
 ConfigRuleContext:IOSEthernetInterface
 ConfigRuleType:Forbidden
-# TEST
 ConfigRuleMatch:<code> ${"(?<!no)"} ip directed-broadcast</code> 
 ConfigRuleFix:interface INSTANCE${"\\"}
 no ip directed-broadcast
@@ -1462,7 +1461,7 @@ for line in aaa.methodsLists:
         "aaa authentication {lineType} {name} {methods}\\\n".format(
             lineType=aaa.methodsLists[line]['type']['cisco'],
             name=line,
-            methods=methods.replace('+','\+') #because of possible tacacs+
+            methods=methods.replace('+','\+') #because of possible tacacs+ value
             )
         )
     aaa_methodsListsTypes.append(aaa.methodsLists[line]['type']['cisco'])

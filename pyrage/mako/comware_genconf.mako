@@ -1,12 +1,12 @@
 <%!
 """
-A mako template which generates configuration on Comware syntax. The aim is on generating
-syntax without overwhelming the user with warnings and possible errors as a user known od the 
-syntax is expected. Thus, for instance, only two AAA servers are printed in an every group
+Mako template which generates configuration for Comware devices. The aim is on generating
+syntax without overwhelming the user with warnings and possible errors as knowledge of syntax and limitations is expected from an user. 
+Thus, for instance, only two AAA servers are printed in an every group
 as this is the limitation of Comware syntax. 
 Also limitations on the expected data are not validated (i.e. types of ACL for the particular application).
 This could higly vary with the versions and the aim of this template is not to do these checks on behalf of the user.
-Some considerations should be thus done when the XML if filled with the desired data an choose them so the generated configuration
+Some considerations should be thus done when the XML is filled with the desired data an choose them so the generated configuration
 should be accepted by the device.
 """
 import re
@@ -94,7 +94,7 @@ def printSnmpCommunity(snmpCom,acls):
             aclName=acl.name if acl.name is not None else acl.number['comware']
         return "snmp-agent community {access} {com} {acl}".format(
             com=snmpCom['community'],
-            access='write' if snmpCom['privilege'].lower()=='rw' else 'write',
+            access='write' if snmpCom['privilege'].lower()=='rw' else 'read',
             acl="acl "+aclName
         ).strip()
     except KeyError as e:
@@ -199,13 +199,17 @@ def printAcl(acl):
 
     if acl.name is not None:
         """ pokus """ 
-        output+="acl number {num} name {name}\n".format(num=aclNum,name=acl.name)
+        output+="acl {ver}number {num} name {name}\n".format(num=aclNum,
+            name=acl.name,
+            ver='ipv6 ' if acl.ver==6 else '')
     else:
-        output+="acl number {num}\n".format(
-            num=aclNum
+        output+="acl {ver}number {num}\n".format(
+            num=aclNum,
+            ver='ipv6 ' if acl.ver==6 else ''
         )
-    for id,rule in acl.rules.items():
-        lineNum=int(id)
+    for rule_id in sorted(acl.rules):
+        rule=acl.rules[rule_id]
+        lineNum=int(rule_id)
         # build rule lines
         if 'optional' in rule and rule['optional']:
         	continue
@@ -214,7 +218,7 @@ def printAcl(acl):
             # insert the comment line between the rules,
             if lineNum-1 in acl.rules:
                 if lineNum+1 in acl.rules:
-                    return "# UNABLE TO PRINT ACL: '{0}'".format(acl.id)
+                    return "# UNABLE TO PRINT ACL: '{0}'".format(acl.rule_id)
                 else:
                     lineNum+=1
 
@@ -224,7 +228,7 @@ def printAcl(acl):
 
         lineSyntax=" rule %(seq)s %(action)s %(protocol)s %(source_ip)s %(source_mask)s %(source_port)s %(destination_ip)s %(destination_mask)s %(destination_port)s %(state)s %(log)s"
         lineArgs = defaultdict(str,rule)
-        lineArgs['seq'] = id
+        lineArgs['seq'] = rule_id
 
         # build wildcard masks from bit-length repr.
         if lineArgs['source_mask']=='32':
@@ -257,44 +261,7 @@ def getAclName(acl):
         return acl.name
     else:
         return acl.number['comware']
-    
-"""
-def printAAA_AuthGroup(aaa,name):
-    if aaa is None or name is None or len(aaa)==0 or len(name)==0:
-        return "UNABLE TO PRINT AAA AUTH GROUP"
-    try:
-        group=aaa.groups[name]
-        if group.type.lower() not in ['tacacs','tacacs+','radius']:
-            return "# UNABLE TO PRINT AAA AUTH GROUP ({0}), INVALID TYPE: {1}".format(
-                name,
-                group.type
-            )
-        output="{0} scheme {1}\n".format(
-                'radius' if group.type.lower()=='radius' else 'hwtacacs',
-                name
-        )            
-        count=0
-        for host in group['hosts']:
-            comware supports only two hosts per group 
-            if count > 1: break
-            if host in aaa.hosts:
-                if group.type.lower() != aaa.hosts[host]['type']:
-                    return "# UNABLE TO PRINT AAA AUTH GROUP, HOST ({0}), GROUP AND HOST TYPE DOES NOT MATCH.".format(
-                        host
-                        )
-                count+=1
-                order='primary' if count == 1 else 'secondary'
-                output+=" {0} authentication {1}\n".format(
-                    order,
-                    aaa.hosts[host]['ip']
-                    )    
-    except ValueError,KeyError as e:
-        return "# UNABLE TO PRINT AAA AUTH GROUP ({0}): {1}".format(
-            name,
-            str(e)
-            )
-    return output+" key authentication FIXME\n#"
-"""     
+      
 %> 
 	SHUTDOWN ALL INTS
 # TODO
@@ -352,7 +319,7 @@ banner motd ~
 	% endif 	
 	% if vty.vlan is not None:
 interface Vlan-interface${vty.vlan}
-# TODO IP
+# FIXME IP
 quit
 #
 	% endif

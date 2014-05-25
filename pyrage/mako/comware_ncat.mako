@@ -1,13 +1,51 @@
 <%page args="dhcpSnooping=None,arpInspection=None, uRPF=None, ipSourceGuard=None, syslog=None, ntp=None, bgp=None, ospf=None, hsrp=None, vty=None,device=None,aaa=None,snmp=None, **kwargs"/>
 
-# Tacacs is hardcoded
-# TODO: 
-#		snmp
-#		testing
-
 <%!
+import re
 from collections import defaultdict 
 
+def buildNetMask(maskLen,wildcardFormat=True):
+        try:
+            maskLen = int(maskLen)
+        except ValueError:
+            return "INVALID_MASK"
+            #raise InvalidDataGiven("Invalid mask value given: '{0}'".format(
+            #    maskLen),maskLen)
+        if maskLen not in range(33):
+            return "INVALID_MASK"
+            #raise InvalidDataGiven("Invalid mask length given: '{0}'".format(
+            #   maskLen),maskLen)
+
+        if wildcardFormat:
+            net = '0'
+            host = '1'
+        else:
+            net = '1'
+            host = '0'
+
+        net *= maskLen
+        host *= (32 - maskLen)
+
+        maskBits = net + host
+        maskRepr = {1:{},2:{},3:{},4:{}}
+
+        maskRepr[1]['bits'] = maskBits[0:8][::-1]
+        maskRepr[2]['bits'] = maskBits[8:16][::-1]
+        maskRepr[3]['bits'] = maskBits[16:24][::-1]
+        maskRepr[4]['bits'] = maskBits[24:32][::-1]
+
+        for i in range (8):
+            for maskPart in maskRepr:
+                if 'num' not in maskRepr[maskPart]:
+                    maskRepr[maskPart]['num'] = 0
+                maskRepr[maskPart]['num'] += 2**i *int( maskRepr[maskPart]['bits'][i])
+
+        wildcardMask = ""
+        for i in maskRepr.keys():
+            wildcardMask += str(maskRepr[i]['num']) + "."
+
+        return wildcardMask[:-1]
+        
 def getAclType(number):
     try:
         if int(number) in range(2000,2999):
@@ -141,6 +179,23 @@ def getAclNameRegex(acl):
 	except NameError, AttributeError:
 		return '(ERR)'
 	regex='(' + regex[:-1]+ ')'
+
+def printSnmpCommunity(snmpCom,acls):
+    if snmpCom is None:
+        return "# UNABLE TO PRINT SNMP COMMUNITY"
+    try:
+        aclName=''
+        access=''
+        if 'aclId' in snmpCom and acls[snmpCom['aclId']] is not None:
+            acl=acls[snmpCom['aclId']]
+            aclName=acl.name if acl.name is not None else acl.number['comware']
+        return "snmp-agent community {access} {com} {acl}".format(
+            com=snmpCom['community'],
+            access='write' if snmpCom['privilege'].lower()=='rw' else 'read',
+            acl="acl "+aclName
+        ).strip()
+    except Exception as e:
+        return "# UNABLE TO PRINT SNMP COMMUNITY: {0}".format(str(e))	
 		
 %>
 <%def name="makeRegexOfContextInstanceList(contextList)">\
@@ -160,7 +215,7 @@ ConfigClassParentName:root node
 
 ConfigVersion:0.0.1
 ConfigOrganization:Insitute of Computer Science, Masaryk University
-ConfigDocumentType:Gold Standard Benchmark
+ConfigDocumentType:ICS MU security guideline benchmark
 ConfigPlatforms:HP Comware devices
 ConfigFeedbackTo:vavra@ics.muni.cz
 ConfigRulesAlias:hp-comware-benchmark.html
@@ -346,22 +401,6 @@ ConfigRuleFix:interface INSTANCE${"\\"}
  ip check source ip-address mac-address
 % endif 
 
-
-
-ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
-ConfigRuleParentName:3. Data plane
-ConfigRuleVersion: version.*
-ConfigRuleContext:ComwareEthernetInterface
-ConfigRuleInstance:.*
-ConfigRuleType:Forbidden
-ConfigRuleMatch:<code>(?!(^interface \S+\n( port link-mode (bridge|route)\n)?$)).+</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Forbid non-shutdown interface in default configuration
-ConfigRuleSelected:Yes
-ConfigRuleFix:interface INSTANCE${"\\"}
-shutdown
-
-
 ConfigRuleName:3.8 Limit amount of broadcast traffic on an interface
 ConfigRuleParentName:3. Data plane
 ConfigRuleVersion:version.*
@@ -375,6 +414,18 @@ ConfigRuleSelected:Yes
 ConfigRuleFix:interface INSTANCE${"\\"}
 multicast-suppression 20
 
+#ConfigRuleName:3.9 Forbid a non-shutdown interface in default configuration
+#ConfigRuleParentName:3. Data plane
+#ConfigRuleVersion: version.*
+#ConfigRuleContext:ComwareEthernetInterface
+#ConfigRuleInstance:.*
+#ConfigRuleType:Forbidden
+#ConfigRuleMatch:<code>(?!^interface \S+\n port link-mode (bridge|route)\n$).+</code>
+#ConfigRuleImportance:10
+#ConfigRuleDescription:Forbid non-shutdown interface in default configuration
+#ConfigRuleSelected:Yes
+#ConfigRuleFix:interface INSTANCE${"\\"}
+#shutdown
 
 
 
@@ -403,11 +454,8 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require NTP server(s) to be configured
 ConfigRuleSelected:Yes
 ConfigRuleFix:${ntpServersRegex}
-
-# srv-10g neodpovida na telnet host daytime 
 % endif 
 
-#{{{ SYSLOG TODO add severity and facility
 % if syslog is not None and syslog.hosts is not None:
 ConfigClassName:2.2 Syslog
 ConfigClassDescription:Syslog events logging related rules 
@@ -426,12 +474,11 @@ ConfigRuleContext:ComwareGlobal
 ConfigRuleType:Required
 ConfigRuleMatch:<code>${syslogHosts}</code>
 ConfigRuleImportance:10
-ConfigRuleDescription:Require a syslog server configured 
+ConfigRuleDescription:Require syslog server configured 
 ConfigRuleSelected:Yes
 % endif
-#}}}
 
-#{{{BGP auth
+
 % if device.l3:
 ConfigClassName:2.3 BGP authentication
 ConfigClassDescription:BGP authentication
@@ -449,9 +496,7 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require peer-group or explicit auth defined for every BGP peer  
 ConfigRuleSelected:Yes
 % endif 
-#}}}
 
-#{{{OSPF auth
 % if device.l3:
 ConfigClassName:2.4 OSPF
 ConfigClassDescription:OSPF related rules
@@ -480,7 +525,8 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Require message-digest auth for every defined OSPF area 
 ConfigRuleSelected:Yes
 ConfigRuleDiscussion:HP Layer-3 IP Routing Configuration Guide
-ConfigRuleFix:ospf EDIT-BY-HAND${newline()} area CONTEXT  authentication-mode md5
+ConfigRuleFix:ospf EDIT-BY-HAND_OSPF_PROCESS${"\\"}
+ area CONTEXT authentication-mode md5
 % endif 
 
 % if device.l2:
@@ -644,7 +690,6 @@ ConfigRuleImportance:10
 ConfigRuleDescription:Disable HTTPS server.
 ConfigRuleSelected:yes
 
-#{{{ SSH
 ConfigClassName:1.2 SSH
 ConfigClassDescription:Access control
 ConfigClassSelected:Yes
@@ -659,8 +704,6 @@ ConfigRuleMatch:<code>sysname \S+</code>
 ConfigRuleImportance:10
 ConfigRuleDescription:Configure host name
 ConfigRuleSelected:yes
-
-# todo ? domain-name
 
 ConfigRuleName:1.2.4 - Require VTY Timeout value defined
 ConfigRuleParentName:1.2 SSH
@@ -682,6 +725,7 @@ ConfigRuleMatch:<code>ssh server authentication-retries \d+</code>
 ConfigRuleImportance:7
 ConfigRuleDescription:Verify the device is configured to limit the number of SSH authentication attempts.
 ConfigRuleSelected:yes
+ConfigRuleFix:ssh server authentication-retries 3
 
 ConfigRuleName:1.2.6 - Require SSH Authentication timeout to be defined
 ConfigRuleParentName:1.2 SSH
@@ -692,6 +736,7 @@ ConfigRuleMatch:<code>ssh server authentication-timeout \d+</code>
 ConfigRuleImportance:7
 ConfigRuleDescription:Require SSH Authentication timeout to be defined.
 ConfigRuleSelected:yes
+ConfigRuleFix:ssh server authentication-timeout 120
 
 ConfigRuleName:1.2.6 - Require SSH enabled
 ConfigRuleParentName:1.2 SSH
@@ -704,46 +749,80 @@ ConfigRuleDescription:Verify that ssh server runs.
 ConfigRuleSelected:yes
 #}}}
 
-#{{{ AAA, TACACS
-% if aaa:
-ConfigClassName:1.3 AAA
-ConfigClassDescription:AAA
-ConfigClassSelected:Yes
-ConfigClassParentName:1. Management plane
-
-# TODO test if tacacs in aaa 
-ConfigClassName:1.3.1 Tacacs
-ConfigClassDescription:Tacacs
-ConfigClassSelected:Yes
-ConfigClassParentName:1.3 AAA
-
-ConfigRuleName:1.3.1.1 Require tacacs authentication server defined 
-ConfigRuleParentName:1.3.1 Tacacs
-ConfigRuleVersion: version.*
-ConfigRuleContext:AAA_HWTACACS
-ConfigRuleInstance:hwtac
-ConfigRuleType:Required
-ConfigRuleMatch:<code>primary authentication 147.251.7.17</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Require tacacs authentication server defined
-ConfigRuleSelected:Yes
-
-ConfigRuleName:1.3.1.2 Require tacacs authentication methods list defined 
-ConfigRuleParentName:1.3.1 Tacacs
-ConfigRuleVersion: version.*	
-ConfigRuleContext:AAA_Domain
-ConfigRuleInstance:tacacs
-ConfigRuleType:Required
-ConfigRuleMatch:<code>authentication default hwtacacs-scheme hwtac local</code>
-ConfigRuleImportance:10
-ConfigRuleDescription:Require tacacs authentication methods list defined 
-ConfigRuleSelected:Yes
-% endif 
-#}}}
-
 % if snmp:
 ConfigClassName:1.4 SNMP
 ConfigClassDescription:SNMP related rules 
 ConfigClassSelected:Yes
 ConfigClassParentName:1. Management plane
+
+% if snmp.communities is not None:
+ConfigClassName:1.4.1 SNMP communities
+ConfigClassDescription:SNMP related rules 
+ConfigClassSelected:Yes
+ConfigClassParentName:1.4 SNMP
+
+ConfigClassName:1.4.2 ACLs for SNMP communities
+ConfigClassDescription:SNMP related rules 
+ConfigClassSelected:Yes
+ConfigClassParentName:1.4 SNMP
+
+% for comId,com in snmp.communities.items():
+ConfigRuleName:1.4.1.${loop.index+1} SNMP community 
+ConfigRuleParentName:1.4.1 SNMP communities
+ConfigRuleVersion:version.*
+ConfigRuleContext:ComwareGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>${printSnmpCommunity(com,snmp.acls)}</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Required specific snmp communities to be defined
+ConfigRuleSelected:Yes
+
+% if 'acl_id' in com:
+% if com['acl_id'] not in snmp.acls:
+ConfigRuleName:1.4.2.${loop.index+1} ACL for SNMP community 
+ConfigRuleParentName:1.4.1 ACLs for SNMP communities
+ConfigRuleVersion:version.*
+ConfigRuleContext:ComwareGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>!ERR: ACL ${com['acl_id']} not in snmp instance!</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Required acl for snmp community (1.4.2.${loop.index+1}) to be defined
+ConfigRuleSelected:Yes
+% else:
+ConfigRuleName:1.4.2.${loop.index+1} ACL for SNMP community 
+ConfigRuleParentName:1.4.2 ACLs for SNMP communities
+ConfigRuleVersion:version.*
+ConfigRuleContext:ComwareGlobal
+ConfigRuleType:Required
+ConfigRuleMatch:<code>${printAcl(snmp.acls[com['acl_id']],False)}</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Required acl for snmp community (Rule number 1.4.2.${loop.index+1}) to be defined
+ConfigRuleSelected:Yes
+ConfigRuleFix:${printAcl(snmp.acls[com['acl_id']],True)}
+% endif
 % endif 
+% endfor
+
+ConfigClassName:1.4.3 RO communities
+ConfigClassDescription:SNMP related rules 
+ConfigClassSelected:Yes
+ConfigClassParentName:1.4 SNMP
+
+<%
+roComsRegex=''
+for index,com in snmp.communities.items():
+    if com['privilege']=='RO':
+        roComsRegex+=com['community']+'|'
+roComsRegex='('+roComsRegex[:-1]+')'
+%>
+ConfigRuleName:1.4.3.1 Forbid RO communities to defined also as RW 
+ConfigRuleParentName:1.4.3 RO communities 
+ConfigRuleVersion:version.*
+ConfigRuleContext:ComwareGlobal
+ConfigRuleType:Forbidden
+ConfigRuleMatch:<code>snmp-agent community ${roComsRegex} write.*</code>
+ConfigRuleImportance:10
+ConfigRuleDescription:Forbid RO communities to defined also as RW
+ConfigRuleSelected:Yes
+% endif
+% endif
