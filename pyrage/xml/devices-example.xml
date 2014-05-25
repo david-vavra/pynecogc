@@ -90,7 +90,6 @@
 	</vtp>
 	<vty>
 		<acl_id>mgmt</acl_id>
-        <acl6_id>mgmt6</acl6_id>
 		<gw>192.168.50.1</gw>
 		<protocol version="2" timeout="120" retries="3">ssh</protocol>
 		<protocol>telnet</protocol>
