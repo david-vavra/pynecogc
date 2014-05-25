@@ -348,7 +348,7 @@ def printSnmpCommunity(comId,snmp):
         priv = 'RW'
     else:
         return ERR_INVALID_PRIV
-    if 'aclId' in com:
+    if 'aclId' in com and com['aclId'] is not None:
         if com['aclId'] in snmp.acls:
             aclName = getAclName(snmp.acls[com['aclId']])
         else:
