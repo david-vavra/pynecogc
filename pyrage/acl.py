@@ -91,7 +91,7 @@ class ACLv4():
             self.type[key]=value
 
     def addRule(self,id,rule):
-        assert rule and id
+        assert rule != None, id != None
         self.rules[id]=rule
 
     def parseAcl(self,context):

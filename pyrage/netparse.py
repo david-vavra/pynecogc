@@ -127,6 +127,11 @@ class XML_NetworkParser():
 
             MEMBER_GROUP attributes (in as-in-file order) < DEVICE attributes
         """
+        """ process attributes that could be defined within both group's and device's context """
+        for core_id in context.iter('core_id'):
+            self.currentlyParsedDevice.core_id=core_id.text
+
+        """ proccess plugins """
         for name,instance in instances.items():
             try:
                 instance.parseContext(context,self.acls)
@@ -152,6 +157,7 @@ class Device():
         self.ip6=False
         self.l2=False
         self.l3=False
+        self.core_id=None
 
 
 """ load the plugins """

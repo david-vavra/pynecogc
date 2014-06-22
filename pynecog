@@ -27,6 +27,8 @@ import argparse
 from pyrage.netparse import Device
 from pyrage.netparse import XML_NetworkParser
 from pyrage.logger import Logger
+from pyrage.cisco2comwareAcl import ciscoNamedACL
+from pyrage.cisco2comwareAcl import ciscoNumACL
 
 from pyrage.utils import InvalidData
 
@@ -37,8 +39,9 @@ def main():
     Handle input args
     """
     argParser=argparse.ArgumentParser(description="Generates network configuration from mako templates and attributes parsed from XML by Pyrage library.")
-    argParser.add_argument('-t','--template',help="A path for Mako template")
-    argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file")
+    argParser.add_argument('-t','--template',help="A path for Mako template", required=True)
+    argParser.add_argument('-n','--networkDef', help="Location of the network definition XML file", required=True)
+    argParser.add_argument('-d','--dist', help="Cisco to Comware migration, generate ACLs from the given (Cisco) configuration")
     argParser.add_argument('device',nargs='+')
     inputArgs=argParser.parse_args(sys.argv[1:])
 
@@ -56,6 +59,16 @@ def main():
         except InvalidData as e:
             logger.log('critical',dev+e.msg)
             raise SystemExit(1)
+
+    """
+    Generate ACLs
+    """
+    if inputArgs.dist is not None:
+        acl=''
+        with open(inputArgs.dist) as f:
+            lines = f.readlines()
+            acl+=ciscoNamedACL(lines)
+            acl+=ciscoNumACL(lines)
     """
     Try to open open template
     """
@@ -63,11 +76,12 @@ def main():
 
     mkt=Template(open(inputArgs.template).read())
     for dev,instance in deviceInstances.items():
-        f=open('{0}'.format(dev),'w')
         try:
+            f=open('{0}'.format(dev),'w')
             f.write(mkt.render(
                 device=instance,
                 **instance.instances))
+            f.write(acl)
         except:
             logger.log ('critical',exceptions.text_error_template().render())
             raise SystemExit(2)
